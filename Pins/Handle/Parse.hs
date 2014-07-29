@@ -1,4 +1,4 @@
-module Paskell.Handle.Parse ( Message(..), parseMessage ) where
+module Pins.Handle.Parse ( Message(..), parseMessage ) where
 
 import Control.Applicative hiding (many, (<|>))
 import Text.ParserCombinators.Parsec

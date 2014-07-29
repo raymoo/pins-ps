@@ -1,6 +1,6 @@
-module Paskell.Handle ( Action(..), handle ) where
+module Pins.Handle ( Action(..), handle ) where
 
-import Paskell.Handle.Parse
+import Pins.Handle.Parse
 
 data Action = Send String
             | Login Int String
