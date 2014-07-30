@@ -3,10 +3,8 @@ PINS (PINS Is Not Stretcher)
 
 PINS is a Pokemon Showdown chatbot written in Haskell.
 
-You will need cabal to build the source:
-
-cabal sandbox init
-
+You will need cabal to build the source:<br />
+cabal sandbox init<br />
 cabal install -j
 
 This will install the bot in the sandbox ./.cabal-sandbox/bin/pins
@@ -19,13 +17,13 @@ Configuration
 
 Config file is very basic at the moment, you need a file named "config" in the same directory as pins with the following lines:
 
-1: bot username
-2: bot password
-3: server (main server is sim.smogon.com)
-4: port (main is 8000)
+1: bot username<br />
+2: bot password<br />
+3: server (main server is sim.smogon.com)<br />
+4: port (main is 8000)<br />
 5: path (on main it is /showdown/websocket)
 
-You can have too many lines but the program will complain if you don't have enough
+You can have too many lines, but the program will complain if you don't have enough
 
 
 Features
