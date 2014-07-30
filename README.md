@@ -26,6 +26,11 @@ Config file is very basic at the moment, you need a file named "config" in the s
 You can have too many lines, but the program will complain if you don't have enough
 
 
+Using the Bot
+=======
+You can run the generated executable directly, or you can run without compiling with "runhaskell Pins.hs" in the top of the source directory.
+
+
 Features
 =======
 Currently, all it does is connect to a server based on a config file and join the techcode room
