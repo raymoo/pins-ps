@@ -1,5 +1,6 @@
 module Pins.Handle.Parse ( Message(..), parseMessage ) where
 
+import Control.Monad
 import Control.Applicative hiding (many, (<|>))
 import Text.ParserCombinators.Parsec
 import Text.Parsec.Token
@@ -38,7 +39,7 @@ challStr = do
   return (ChallStr (fromIntegral cKey) chall)
 
 baseStr :: Parser Message
-baseStr = many anyChar >>= return . Base
+baseStr = liftM Base (many anyChar)
 
 parseMessage :: String -> Message
 parseMessage s = case parse message "message parsing" s of

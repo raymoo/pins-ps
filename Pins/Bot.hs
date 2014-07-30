@@ -20,7 +20,7 @@ data Bot = Bot { bName       :: String
                }
 
 actionsToIO :: Bot -> [Action] -> IO ()
-actionsToIO b = sequence_ . map (actionToIO b)
+actionsToIO b = mapM_ (actionToIO b)
 
 actionToIO :: Bot -> Action -> IO ()
 actionToIO b (Send s) = WS.sendTextData (bConn b) . T.pack $ (s ++ "\n")

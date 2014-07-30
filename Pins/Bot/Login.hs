@@ -22,7 +22,7 @@ getAssertion name pass cKey chall = do
 
 aFromResponse :: String -> String
 aFromResponse = getA . decode
-    where getA (Ok (JSObject o)) = fromMaybe "" . fmap valueToString . lookup "assertion"  . fromJSObject $ o
+    where getA (Ok (JSObject o)) = maybe "" valueToString . lookup "assertion"  . fromJSObject $ o
           getA  (Error _) = ""
 
 valueToString :: JSValue -> String
