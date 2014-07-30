@@ -28,15 +28,12 @@ mLex :: Parser String
 mLex = char '|' >> many (noneOf "|")
 
 dLex :: Parser Int
-dLex = maybeRead <$> mLex >>= check
+dLex = liftM maybeRead mLex >>= check
     where check Nothing = unexpected "non-number"
           check (Just a) = return a
 
 challStr :: Parser Message
-challStr = do
-  cKey <- dLex
-  chall <- mLex
-  return (ChallStr (fromIntegral cKey) chall)
+challStr = ChallStr `liftM` dLex `ap` mLex
 
 baseStr :: Parser Message
 baseStr = liftM Base (many anyChar)
