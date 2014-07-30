@@ -33,7 +33,7 @@ dLex = liftM maybeRead mLex >>= check
           check (Just a) = return a
 
 challStr :: Parser Message
-challStr = ChallStr `liftM` dLex `ap` mLex
+challStr = liftM2 ChallStr dLex mLex
 
 baseStr :: Parser Message
 baseStr = liftM Base (many anyChar)
