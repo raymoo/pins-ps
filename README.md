@@ -4,7 +4,9 @@ PINS (PINS Is Not Stretcher)
 PINS is a Pokemon Showdown chatbot written in Haskell.
 
 You will need cabal to build the source:
+
 cabal sandbox init
+
 cabal install -j
 
 This will install the bot in the sandbox ./.cabal-sandbox/bin/pins
