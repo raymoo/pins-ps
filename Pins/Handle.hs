@@ -4,11 +4,12 @@ import Pins.Handle.Parse
 
 data Action = Send String
             | Login Int String
+            | Print String
               deriving Show
 
 handle :: String -> [Action]
 handle = makeAction . parseMessage
 
 makeAction :: Message -> [Action]
-makeAction (ChallStr ckey chall) = [Login ckey chall]
-makeAction m = []
+makeAction (ChallStr ckey chall) = [Print "Received Challenge", Login ckey chall, Print "Sending response", Send "|/join yuyukofanclub"]
+makeAction m = [Print "Unhandled Message"]
