@@ -32,9 +32,9 @@ actionToIO b (Login key chall) = do
 bot :: Config -> WS.ClientApp ()
 bot config conn = do
   putStrLn "Connected"
-  forever $ do
-    msg <- T.unpack <$> WS.receiveData conn
-    actionsToIO b . handle $ msg
+  forever $
+    liftM T.unpack (WS.receiveData conn) >>=
+    actionsToIO b . handle
   where b = Bot (name config) (pass config) conn
 
 runBot :: Config -> IO ()

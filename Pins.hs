@@ -12,4 +12,6 @@ runWhat ss
     | otherwise = runBot . generateConfig $ ss
 
 main :: IO ()
-main = readFile "config" >>= runWhat . lines
+main = 
+    readFile "config" >>=
+    runWhat . lines
