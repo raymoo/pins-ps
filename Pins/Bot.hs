@@ -5,7 +5,6 @@ import           Pins.Handle
 import           Pins.Bot.Login
 import qualified Network.WebSockets as WS
 import           Control.Monad
-import           Control.Applicative ((<$>))
 import qualified Data.Text          as T
 
 data Config = Config { name   :: String
@@ -34,9 +33,12 @@ bot :: Config -> WS.ClientApp ()
 bot config conn = do
   putStrLn "Connected"
   forever $
-    liftM T.unpack (WS.receiveData conn) >>=
+    getData conn >>=
     actionsToIO b . handle
   where b = Bot (name config) (pass config) conn
 
 runBot :: Config -> IO ()
 runBot c = WS.runClient (server c) (port c) (path c) (bot c)
+
+getData :: IO String
+getData = liftM T.unpack . WS.receiveData
