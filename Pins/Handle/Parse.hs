@@ -20,17 +20,16 @@ inMessage :: Parser String
 inMessage = many (noneOf "|")
 
 message :: Parser Message
-message = try (inMessage >>= chooseParse) <|> baseStr
-
-chooseParse :: String -> Parser Message
-chooseParse "" = mLex >>= chooseBlankParse
-chooseParse s  = mLex >>= chooseRoomParse s
+message = try (room >>= roomParse) <|> try (mLex >>= chooseBlankParse) <|> baseStr
 
 maybeRead :: Read a => String -> Maybe a
 maybeRead = fmap fst . listToMaybe . reads
 
+roomParse :: String -> Parser Message
+roomParse r = (mLex >>= chooseRoomParse r)
+
 chooseRoomParse :: String -> String -> Parser Message
-chooseRoomParse r "c" = liftM2 (Chat r) mLex mLex
+chooseRoomParse r "c" = liftM2 (Chat r . drop 1) mLex mLex
 chooseRoomParse _ _   = return Unknown
 
 chooseBlankParse :: String -> Parser Message
@@ -47,6 +46,9 @@ dLex :: Parser Int
 dLex = liftM maybeRead mLex >>= check
     where check Nothing = unexpected "non-number"
           check (Just a) = return a
+
+room :: Parser String
+room = char '>' *> many (noneOf "\n") <* char '\n'
 
 challStr :: Parser Message
 challStr = liftM2 ChallStr dLex mLex
