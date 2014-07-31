@@ -29,7 +29,7 @@ roomParse :: String -> Parser Message
 roomParse r = (mLex >>= chooseRoomParse r)
 
 chooseRoomParse :: String -> String -> Parser Message
-chooseRoomParse r "c" = liftM2 (Chat r . drop 1) mLex mLex
+chooseRoomParse r "c" = (Chat r . drop 1) <$> mLex <*> mLex
 chooseRoomParse _ _   = return Unknown
 
 chooseBlankParse :: String -> Parser Message
@@ -43,7 +43,7 @@ mLex :: Parser String
 mLex = char '|' >> inMessage
 
 dLex :: Parser Int
-dLex = liftM maybeRead mLex >>= check
+dLex = maybeRead <$> mLex >>= check
     where check Nothing = unexpected "non-number"
           check (Just a) = return a
 
@@ -51,10 +51,10 @@ room :: Parser String
 room = char '>' *> many (noneOf "\n") <* char '\n'
 
 challStr :: Parser Message
-challStr = liftM2 ChallStr dLex mLex
+challStr = ChallStr <$>  dLex <*> mLex
 
 baseStr :: Parser Message
-baseStr = liftM Base (many anyChar)
+baseStr = Base <$> (many anyChar)
 
 parseMessage :: String -> Message
 parseMessage s = case parse message "message parsing" s of
