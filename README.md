@@ -33,6 +33,6 @@ You can run the generated executable directly, or you can run without compiling 
 
 Features
 =======
-It currently only connects to techcode room (and won't join a room on any server without one)
+It currently only connects to techcode room (and won't join a room on any server without one). You could make a trigger to join it to other rooms, but no access lists until I work on trigger inputs a bit more.
 
 Basic triggers are in, but they're ugly and undocumented. You might be able to figure them out anyway, though.
