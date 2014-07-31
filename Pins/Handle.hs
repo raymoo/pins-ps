@@ -42,7 +42,7 @@ makeAction (ChallStr ckey chall) = [ Print "Received Challenge"
                                    , Send "|/join techcode"
                                    ]
 makeAction c@(Chat _ _ _) = passTriggers (makeMInfo c) triggerList
-makeAction m = [Print "Unhandled Message"]
+makeAction m = [Print ("Unhandled Message: " ++ show m)]
 
 safeHead :: [a] -> Maybe a
 safeHead (x:xs) = Just x
