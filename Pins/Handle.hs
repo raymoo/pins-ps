@@ -2,6 +2,7 @@ module Pins.Handle ( Action(..), handle ) where
 
 import Pins.Handle.Parse
 import Pins.Handle.Actions.Base
+import Pins.Handle.Triggers
 
 handle :: String -> [Action]
 handle = makeAction . parseMessage

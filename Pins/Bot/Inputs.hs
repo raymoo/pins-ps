@@ -1,4 +1,6 @@
-module Inputs where
+{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
+
+module Pins.Bot.Inputs where
 
 data InputResult = InputString String
                  | InputInt Int
@@ -10,4 +12,4 @@ class Constantable a where
     constant :: a -> Input
 
 instance Constantable String where
-    constant = InputString
+    constant = ConstantString
