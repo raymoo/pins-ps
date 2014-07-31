@@ -33,4 +33,6 @@ You can run the generated executable directly, or you can run without compiling 
 
 Features
 =======
-Currently, all it does is connect to a server based on a config file and join the techcode room
+It currently only connects to techcode room (and won't join a room on any server without one)
+
+Basic triggers are in, but they're ugly and undocumented. You might be able to figure them out anyway, though.
