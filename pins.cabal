@@ -3,7 +3,7 @@
 
 name:                pins
 version:             0.1.0.0
-synopsis:            Yet another Pokemon Showdown clone, except written in Haskell
+synopsis:            Yet another Pokemon Showdown bot, except written in Haskell
 -- description:         
 license:             GPL-3
 license-file:        LICENSE
