@@ -1,3 +1,4 @@
+
 module Pins.Bot (runBot, Config(..)) where
 
 import           Pins.Handle.Actions.Base
@@ -40,5 +41,5 @@ bot config conn = do
 runBot :: Config -> IO ()
 runBot c = WS.runClient (server c) (port c) (path c) (bot c)
 
-getData :: IO String
+getData :: WS.Connection -> IO String
 getData = liftM T.unpack . WS.receiveData
