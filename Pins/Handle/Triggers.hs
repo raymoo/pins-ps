@@ -20,6 +20,9 @@ data Trigger = Trigger { tInputs :: [(String, Input)] -- Any inputs the trigger 
                        , act :: Act                  -- The acting function
                        }
 
+triggerList :: [Trigger]
+triggerList = [testCheck]
+
 -- Utility Functions: Common Tests
 contentIs :: String -> Test
 contentIs s = (s==) . what

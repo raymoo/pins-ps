@@ -8,9 +8,6 @@ import Pins.Bot.Inputs
 
 import Data.Maybe
 
-triggerList :: [Trigger]
-triggerList = [testCheck]
-
 passTriggers :: MessageInfo -> [Trigger] -> [Action]
 passTriggers mi = concatMap (doTrigger mi) . filter (checkTrigger mi)
 
