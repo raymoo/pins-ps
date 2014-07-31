@@ -18,3 +18,5 @@ command c = Send ('|' : c)
 put :: String -> Action
 put = Print
 
+arbIO :: IO () -> Action
+arbIO = Arbitrary 
