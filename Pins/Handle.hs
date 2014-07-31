@@ -1,11 +1,7 @@
 module Pins.Handle ( Action(..), handle ) where
 
 import Pins.Handle.Parse
-
-data Action = Send String
-            | Login Int String
-            | Print String
-              deriving Show
+import Pins.Handle.Actions.Base
 
 handle :: String -> [Action]
 handle = makeAction . parseMessage

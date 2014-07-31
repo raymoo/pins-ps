@@ -1,5 +1,6 @@
 module Pins.Bot (runBot, Config(..)) where
 
+import           Pins.Handle.Actions.Base
 import           Pins.Handle
 import           Pins.Bot.Login
 import qualified Network.WebSockets as WS
