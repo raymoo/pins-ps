@@ -7,7 +7,7 @@ data MessageInfo = MessageInfo { mType  :: String        -- What was it - chat, 
                                , who    :: String        -- The user
                                , rank   :: Char          -- The user's rank
                                , room   :: String        -- The room the message was in
-                               , inputs :: [InputResult] --Any inputs
+                               , inputs :: [InputResult] -- Result of any inputs
                                }
 
 data Trigger = Trigger [Input]                   -- Any inputs the trigger needs
