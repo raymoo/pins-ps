@@ -6,26 +6,42 @@ import Text.ParserCombinators.Parsec
 import Text.Parsec.Token
 import Data.Maybe
 
+type User = String
+type Room = String
+type What = String
+
 data Message = Unknown
-             | ChallStr {cKeyID :: Int, challenge :: String}
+             | ChallStr Int String
+             | Chat Room User What
              | Base String
                deriving Show
 
+inMessage :: Parser String
+inMessage = many (noneOf "|")
+
 message :: Parser Message
-message = try (mLex >>= chooseParse) <|> baseStr
+message = try (inMessage >>= chooseParse) <|> baseStr
+
+chooseParse :: String -> Parser Message
+chooseParse "" = mLex >>= chooseBlankParse
+chooseParse s  = mLex >>= chooseRoomParse s
 
 maybeRead :: Read a => String -> Maybe a
 maybeRead = fmap fst . listToMaybe . reads
 
-chooseParse :: String -> Parser Message
-chooseParse "challstr" = try challStr <|> return Unknown
-chooseParse x = return Unknown
+chooseRoomParse :: String -> String -> Parser Message
+chooseRoomParse r "c" = liftM2 (Chat r) mLex mLex
+chooseRoomParse _ _   = return Unknown
+
+chooseBlankParse :: String -> Parser Message
+chooseBlankParse "challstr" = try challStr <|> return Unknown
+chooseBlankParse x = return Unknown
 
 getArgs :: Parser [String]
 getArgs = many mLex
 
 mLex :: Parser String
-mLex = char '|' >> many (noneOf "|")
+mLex = char '|' >> inMessage
 
 dLex :: Parser Int
 dLex = liftM maybeRead mLex >>= check
