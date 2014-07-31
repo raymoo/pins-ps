@@ -15,9 +15,10 @@ type Test = (MessageInfo -> Bool)
 type Act = (MessageInfo -> [Action])
 type Key = String
 
-data Trigger = Trigger [(String, Input)] -- Any inputs the trigger needs, with names
-                       Test              -- The checking function
-                       Act               -- The acting function
+data Trigger = Trigger { tInputs :: [(String, Input)] -- Any inputs the trigger needs, with names
+                       , test ::Test                 -- The checking function
+                       , act :: Act                  -- The acting function
+                       }
 
 -- Utility Functions: Common Tests
 contentIs :: String -> Test
