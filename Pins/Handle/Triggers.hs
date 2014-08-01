@@ -34,6 +34,9 @@ typeIs s = (s==) . mType
 startsWith :: String -> Test
 startsWith s = and . zipWith (==) s . what
 
+combine :: [Test] -> Test
+combine ts = and . flip map ts . flip ($)
+
 -- Utility Functions: Common Actions
 say :: String -> MessageInfo -> Action
 say s = ($ s) . respond
@@ -61,3 +64,4 @@ testCheck = Trigger [("testString", constant "basic input system works")]
                     (\mi -> sayOnly
                            (maybe "not this" ("The test string is: "++) . maybeString "testString" $ mi) 
                            mi)
+
