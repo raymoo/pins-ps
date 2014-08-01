@@ -82,7 +82,7 @@ sendAnonMessage :: Act
 sendAnonMessage mi = anonMessMake . getArgs . drop 6 $ what mi
     where anonMessMake ss
               | length ss >= 2 = case ss !! 0 of
-                                   ('#':xs) -> [sendChat (ss !! 0) ("AnonymousMessage: " ++ ss !! 1)]
+                                   ('#':xs) -> [sendChat (drop 1 (ss !! 0)) ("AnonymousMessage: " ++ ss !! 1)]
                                    _        -> [sendPm (ss !! 0) ("AnonymousMessage: " ++ ss !! 1)]
               | otherwise      = anonErrorMessage
           anonErrorMessage = [ respond mi "Usage is: !mess [#]destination, message"
