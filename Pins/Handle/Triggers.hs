@@ -1,6 +1,7 @@
 module Pins.Handle.Triggers where
 
 import Pins.Handle.Triggers.Imports
+import Data.Char
 
 data MessageInfo = MessageInfo { mType  :: String                   -- What was it - chat, pm, join message, etc?
                                , what    :: String                  -- The content
@@ -27,6 +28,9 @@ triggerList = [testCheck]
 contentIs :: String -> Test
 contentIs s = (s==) . what
 
+typeIs :: String -> Test
+typeIs s = (s==) . mType
+
 startsWith :: String -> Test
 startsWith s = and . zipWith (==) s . what
 
@@ -46,6 +50,9 @@ maybeString k mi = case couldBeString of
 
 single :: a -> [a]
 single x = [x]
+
+condenseNick :: String -> String
+condenseNick = map toLower . filter isAlphaNum
 
 -- Test trigger: Tests current basic functionality
 testCheck :: Trigger
