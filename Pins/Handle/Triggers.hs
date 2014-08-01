@@ -26,6 +26,7 @@ data Trigger = Trigger { tInputs :: [(Key, Input)] -- Any inputs the trigger nee
 triggerList :: [Trigger]
 triggerList = [ testCheck
               , anonMessage
+              , about
               ]
 
 -- Utility Functions: Common Tests
