@@ -91,3 +91,9 @@ sendAnonMessage mi = anonMessMake . getArgs . drop 6 $ what mi
           anonErrorMessage = [ respond mi "Usage is: !mess [#]destination, message"
                              , respond mi "The # is only necessary for sending to rooms"
                              ]
+
+-- About trigger: Displays bot info
+about :: Trigger
+about = Trigger []
+                (contentIs "!about")
+                (sayOnly "I am a bot written by Reimu in the functional language Haskell (http://www.haskell.org). Repo: https://github.com/raymoo/pins-ps")
