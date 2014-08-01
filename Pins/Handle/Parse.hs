@@ -13,32 +13,14 @@ type What = String
 data Message = Unknown
              | ChallStr Int String
              | Chat Room User What
+             | Pm User What
              | Base String
                deriving Show
-
-inMessage :: Parser String
-inMessage = many (noneOf "|")
-
-message :: Parser Message
-message = try (room >>= roomParse) <|> try (mLex >>= chooseBlankParse) <|> baseStr
 
 maybeRead :: Read a => String -> Maybe a
 maybeRead = fmap fst . listToMaybe . reads
 
-roomParse :: String -> Parser Message
-roomParse r = (mLex >>= chooseRoomParse r)
-
-chooseRoomParse :: String -> String -> Parser Message
-chooseRoomParse r "c" = (Chat r . drop 1) <$> mLex <*> mLex
-chooseRoomParse _ _   = return Unknown
-
-chooseBlankParse :: String -> Parser Message
-chooseBlankParse "challstr" = try challStr <|> return Unknown
-chooseBlankParse x = return Unknown
-
-getArgs :: Parser [String]
-getArgs = many mLex
-
+-- Basic Parsers
 mLex :: Parser String
 mLex = char '|' >> inMessage
 
@@ -49,6 +31,32 @@ dLex = maybeRead <$> mLex >>= check
 
 room :: Parser String
 room = char '>' *> many (noneOf "\n") <* char '\n'
+
+inMessage :: Parser String
+inMessage = many (noneOf "|")
+
+getArgs :: Parser [String]
+getArgs = many mLex
+
+-- Main message parser
+message :: Parser Message
+message = try (room >>= chooseParse) <|> try (chooseParse "") <|> baseStr
+
+-- Deciders
+chooseParse :: String -> Parser Message
+chooseParse r = mLex >>= chooseMore
+    where chooseMore "c"        = chat r
+          chooseMore "challstr" = try challStr <|> return Unknown
+          chooseMore _          = return Unknown
+
+-- Message type specific parsers
+
+
+chat :: String -> Parser Message
+chat r = (Chat r) <$> mLex <*> mLex
+
+
+
 
 challStr :: Parser Message
 challStr = ChallStr <$>  dLex <*> mLex
