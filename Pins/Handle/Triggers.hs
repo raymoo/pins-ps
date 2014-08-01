@@ -10,18 +10,19 @@ data MessageInfo = MessageInfo { mType  :: String                   -- What was 
                                , rank    :: Char                    -- The user's rank
                                , room    :: String                  -- The room the message was in
                                , respond :: String -> Action        -- Shortcut for sending message to room
-                               , inputs  :: [(String, InputResult)] -- Result of any inputs
+                               , inputs  :: [(Key, InputResult)]    -- Result of any inputs
                                }
 
 type Test = (MessageInfo -> Bool)
 type Act = (MessageInfo -> [Action])
 type Key = String
 
-data Trigger = Trigger { tInputs :: [(String, Input)] -- Any inputs the trigger needs, with names
-                       , test ::Test                 -- The checking function
-                       , act :: Act                  -- The acting function
+data Trigger = Trigger { tInputs :: [(Key, Input)] -- Any inputs the trigger needs, with names
+                       , test ::Test               -- The checking function
+                       , act :: Act                -- The acting function
                        }
 
+-- Add any triggers you want used here
 triggerList :: [Trigger]
 triggerList = [ testCheck
               , anonMessage
