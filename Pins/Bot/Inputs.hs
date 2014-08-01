@@ -5,6 +5,7 @@ module Pins.Bot.Inputs where
 data InputResult = InputString String
                  | InputInt Int
                  | InputFailed
+                   deriving Show
 
 data Input = ConstantString String
 

@@ -38,21 +38,29 @@ makeAction (ChallStr ckey chall) = [ Print "Received Challenge"
                                    , Print "Sending response"
                                    , Send "|/join techcode"
                                    ]
-makeAction c@(Chat _ _ _) = passTriggers (makeMInfo c) triggerList
-makeAction m = [Print ("Unhandled Message: " ++ show m)]
+makeAction m = maybe [Print ("Unhandled Message: " ++ show m)] (\x -> passTriggers x triggerList) (makeMInfo m)
 
 safeHead :: [a] -> Maybe a
 safeHead (x:xs) = Just x
 safeHead []     = Nothing
 
-makeMInfo :: Message -> MessageInfo
-makeMInfo (Chat r u w) = defaultMInfo { mType = "c"
-                                 , what = w
-                                 , who  = drop 1 u
-                                 , rank = fromMaybe ' ' (safeHead u)
-                                 , room = r
-                                 , respond = sendChat r
-                                 }
+takeRank = fromMaybe ' ' . safeHead
+
+makeMInfo :: Message -> Maybe MessageInfo
+makeMInfo (Chat r u w) = Just defaultMInfo { mType = "c"
+                                           , what = w
+                                           , who  = drop 1 u
+                                           , rank = takeRank u
+                                           , room = r
+                                           , respond = sendChat r
+                                           }
+makeMInfo (Pm u w)     = Just defaultMInfo { mType = "pm"
+                                           , what = w
+                                           , who = drop 1 u
+                                           , rank = takeRank u
+                                           , respond = sendPm u
+                                           }
+makeMInfo _            = Nothing
 
 getInputResults :: [(String, Input)] -> [(String, InputResult)]
 getInputResults xs = zip (map fst xs) (map (getInputResult . snd) xs)
