@@ -23,7 +23,9 @@ data Trigger = Trigger { tInputs :: [(String, Input)] -- Any inputs the trigger 
                        }
 
 triggerList :: [Trigger]
-triggerList = [testCheck]
+triggerList = [ testCheck
+              , anonMessage
+              ]
 
 -- Utility Functions: Common Tests
 contentIs :: String -> Test
@@ -82,9 +84,9 @@ sendAnonMessage :: Act
 sendAnonMessage mi = anonMessMake . getArgs . drop 6 $ what mi
     where anonMessMake ss
               | length ss >= 2 = case ss !! 0 of
-                                   ('#':xs) -> [sendChat (drop 1 (ss !! 0)) ("AnonymousMessage: " ++ ss !! 1)]
-                                   _        -> [sendPm (ss !! 0) ("AnonymousMessage: " ++ ss !! 1)]
+                                   ('#':xs) -> [sendChat (drop 1 (ss !! 0)) ("Anonymous Message: " ++ ss !! 1)]
+                                   _        -> [sendPm (ss !! 0) ("Anonymous Message: " ++ ss !! 1), put $ "Sending pm to " ++ (ss !! 0)]
               | otherwise      = anonErrorMessage
           anonErrorMessage = [ respond mi "Usage is: !mess [#]destination, message"
                              , respond mi "The # is only necessary for sending to rooms"
-                             ]               
+                             ]
