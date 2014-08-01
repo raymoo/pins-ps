@@ -12,7 +12,7 @@ passTriggers :: MessageInfo -> [Trigger] -> [Action]
 passTriggers mi = concatMap (doTrigger mi) . filter (checkTrigger mi)
 
 checkTrigger :: MessageInfo -> Trigger -> Bool
-checkTrigger mi t = (test t) mi
+checkTrigger mi t = test t mi
 
 doTrigger :: MessageInfo -> Trigger -> [Action]
 doTrigger mi t = act t (mi { inputs = getInputResults (tInputs t) })
@@ -38,7 +38,7 @@ makeAction (ChallStr ckey chall) = [ Print "Received Challenge"
                                    , Print "Sending response"
                                    , Send "|/join yuyukofanclub"
                                    ]
-makeAction m = maybe [Print ("Unhandled Message: " ++ show m)] (\x -> passTriggers x triggerList) (makeMInfo m)
+makeAction m = maybe [Print ("Unhandled Message: " ++ show m)] (`passTriggers` triggerList) (makeMInfo m)
 
 safeHead :: [a] -> Maybe a
 safeHead (x:xs) = Just x

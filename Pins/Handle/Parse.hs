@@ -63,10 +63,10 @@ pm :: Parser Message
 pm = Pm <$> mLex <*> (mLex *> contLex)
 
 chat :: String -> Parser Message
-chat r = (Chat r) <$> mLex <*> contLex
+chat r = Chat r <$> mLex <*> contLex
 
 challStr :: Parser Message
 challStr = ChallStr <$>  dLex <*> mLex
 
 baseStr :: Parser Message
-baseStr = Base <$> (many anyChar)
+baseStr = Base <$> many anyChar
