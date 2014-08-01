@@ -2,6 +2,7 @@ module Pins.Handle.Triggers where
 
 import Pins.Handle.Triggers.Imports
 import Data.Char
+import qualified Data.List.Split as LS
 
 data MessageInfo = MessageInfo { mType  :: String                   -- What was it - chat, pm, join message, etc?
                                , what    :: String                  -- The content
@@ -57,6 +58,12 @@ single x = [x]
 condenseNick :: String -> String
 condenseNick = map toLower . filter isAlphaNum
 
+dropLeadSpaces :: String -> String
+dropLeadSpaces = dropWhile (' '==)
+
+getArgs :: String -> [String]
+getArgs = map dropLeadSpaces . LS.splitOn ","
+
 -- Test trigger: Tests current basic functionality
 testCheck :: Trigger
 testCheck = Trigger [("testString", constant "basic input system works")]
@@ -65,3 +72,19 @@ testCheck = Trigger [("testString", constant "basic input system works")]
                            (maybe "not this" ("The test string is: "++) . maybeString "testString" $ mi) 
                            mi)
 
+-- Anonymous message trigger: use !mess destination, message to send a message
+anonMessage :: Trigger
+anonMessage = Trigger []
+                      (combine [startsWith "!mess", typeIs "pm"])
+                      sendAnonMessage
+
+sendAnonMessage :: Act
+sendAnonMessage mi = anonMessMake . getArgs . drop 6 $ what mi
+    where anonMessMake ss
+              | length ss >= 2 = case ss !! 0 of
+                                   ('#':xs) -> [sendChat (ss !! 0) ("AnonymousMessage: " ++ ss !! 1)]
+                                   _        -> [sendPm (ss !! 0) ("AnonymousMessage: " ++ ss !! 1)]
+              | otherwise      = anonErrorMessage
+          anonErrorMessage = [ respond mi "Usage is: !mess [#]destination, message"
+                             , respond mi "The # is only necessary for sending to rooms"
+                             ]               
