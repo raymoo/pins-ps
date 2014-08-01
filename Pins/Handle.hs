@@ -36,7 +36,7 @@ makeAction :: Message -> [Action]
 makeAction (ChallStr ckey chall) = [ Print "Received Challenge"
                                    , Login ckey chall
                                    , Print "Sending response"
-                                   , Send "|/join techcode"
+                                   , Send "|/join yuyukofanclub"
                                    ]
 makeAction m = maybe [Print ("Unhandled Message: " ++ show m)] (\x -> passTriggers x triggerList) (makeMInfo m)
 
