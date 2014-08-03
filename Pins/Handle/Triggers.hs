@@ -2,8 +2,10 @@
 
 module Pins.Handle.Triggers where
 
-import Pins.Handle.Triggers.Imports
-import Data.Char
+import           Pins.Handle.Triggers.Imports
+import           Control.Monad
+import           Data.Char
+import           Data.Maybe
 import qualified Data.List.Split as LS
 
 data MessageInfo = MessageInfo { mType   :: String   -- What was it - chat, pm, join message, etc?
@@ -28,6 +30,9 @@ triggerList :: [Trigger]
 triggerList = [ testCheck
               , anonMessage
               , about
+              , sokuHost
+              , sokuHosting
+              , sokuUnhost
               ]
 
 -- Utility Functions: Common Tests
@@ -42,6 +47,15 @@ startsWith s = and . zipWith (==) s . what
 
 combine :: [Test] -> Test
 combine ts = and . flip map ts . flip ($)
+
+anyTest :: [Test] -> Test
+anyTest ts = or . flip map ts . flip ($)
+
+(<&&>) :: Test -> Test -> Test
+t1 <&&> t2 = combine [t1,t2]
+
+(<||>) :: Test -> Test -> Test
+t1 <||> t2 = anyTest [t1,t2]
 
 -- Utility Functions: Common Actions
 say :: String -> Act
@@ -59,6 +73,12 @@ dropLeadSpaces = dropWhile (' '==)
 
 getArgs :: String -> [String]
 getArgs = map dropLeadSpaces . LS.splitOn ","
+
+aListSet :: Eq k => k -> a -> [(k,a)] -> [(k,a)] -- Very inefficient (O(n)) modification for associated lists.
+aListSet k x = ((k, x) :) . aListDel k
+
+aListDel :: Eq k => k -> [(k,a)] -> [(k,a)] -- O(n) deletion function
+aListDel k = filter ((k/=) . fst)
 
 -- Test trigger: Tests current basic functionality
 testCheck :: Trigger
@@ -85,3 +105,47 @@ sendAnonMessage mi = anonMessMake . getArgs . drop 6 $ what mi
 about :: Trigger
 about = Trigger (contentIs "!about")
                 (say "I am a bot written by Reimu in the functional language Haskell (http://www.haskell.org). Repo: https://github.com/raymoo/pins-ps")
+
+-- Host trigger: Record hosting info
+sokuHost :: Trigger
+sokuHost = Trigger (combine [ startsWith "!host "
+                            , typeIs "c"
+                            ]
+                   )
+                   recHost
+
+recHost :: Act
+recHost mi = case drop 6 . what $ mi of
+               [] -> respond mi "You need to specify hosting info"
+               s  -> putBack `liftM` varGet "soku" >>=
+                     varPut "soku" >>
+                     respond mi (who mi ++ " is hosting at " ++ s)
+                   where putBack = aListSet (condenseNick . who $ mi) s . fromMaybe []
+
+-- Hosting Trigger: Get hosting info
+sokuHosting :: Trigger
+sokuHosting = Trigger (contentIs "!hosting" <&&> (typeIs "c" <||> typeIs "pm"))
+                      getHosting
+
+getHosting :: Act
+getHosting mi = hostList >>= sendPm (who mi)
+    where hostList = (generateList . fromMaybe []) `liftM` varGet "soku"
+
+generateList :: [(String, String)] -> String
+generateList [] = "Nobody is hosting."
+generateList xs =  unlines $ map (\(x,y) -> x ++ " is hosting at " ++ y) xs
+
+-- Unhost Trigger: Stop hosting
+sokuUnhost :: Trigger
+sokuUnhost = Trigger (contentIs "!unhost" <&&> typeIs "c")
+                     stopHosting
+
+stopHosting :: Act
+stopHosting mi = theVar >>= removeHost
+    where theVar :: (MonadAction m) => m [(String, String)]
+          theVar = fromMaybe [] `liftM` varGet "soku"
+          removeHost :: (MonadAction m) => [(String, String)] -> m ()
+          removeHost xs = case lookup (condenseNick . who $ mi) xs of
+                            Just x  -> varMod "soku" (aListDel (condenseNick . who $ mi) :: [(String,String)] -> [(String,String)]) >>
+                                       respond mi (who mi ++ "is no longer hosting.")
+                            Nothing -> respond mi "You are not hosting!"
