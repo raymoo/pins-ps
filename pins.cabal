@@ -12,7 +12,7 @@ maintainer:          uguu@installgentoo.com
 -- copyright:           
 category:            Web
 build-type:          Simple
--- extra-source-files:  
+--extra-source-files:
 cabal-version:       >=1.10
 
 executable pins
