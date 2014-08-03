@@ -30,7 +30,7 @@ class Monad m => MonadAction m where
     login :: Int -> String -> m ()
     printLn :: String -> m () 
     putVar :: String -> Var -> m ()
-    getVar :: String -> m Var
+    getVar :: String -> m (Maybe Var)
 
 constant :: MonadAction m => a -> m a
 constant = return
