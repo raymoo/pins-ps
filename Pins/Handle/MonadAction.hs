@@ -55,3 +55,6 @@ getStringList :: MonadAction m => String -> m (Maybe [String])
 getStringList = liftM unpackCheck . getVar
     where unpackCheck (Just x) = unpack x
           unpackCheck _        = Nothing
+
+varPut :: (MonadAction m, Variable a) => String -> a -> m ()
+varPut k = putVar k . pack
