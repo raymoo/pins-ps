@@ -19,7 +19,7 @@ bot :: Config -> WS.ClientApp ()
 bot config conn = do
   putStrLn "Connected"
   evalStateT (loop conn) b
-  where b = Bot (name config) (pass config) conn
+  where b = Bot (name config) (pass config) conn blankVar
 
 runBot :: Config -> IO ()
 runBot c = WS.runClient (server c) (port c) (path c) (bot c)
