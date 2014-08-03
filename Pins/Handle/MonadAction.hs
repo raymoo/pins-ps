@@ -1,8 +1,9 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, OverlappingInstances #-}
 
 module Pins.Handle.MonadAction where
 
 import Data.Maybe
+import Control.Monad
 
 type Room = String
 type User = String
@@ -45,3 +46,12 @@ sendPm u m = command ("/pm " ++ u ++ ',' : m)
 command :: MonadAction m => String -> m ()
 command = send . ('|' :)
 
+getString :: MonadAction m => String -> m (Maybe String)
+getString = liftM unpackCheck . getVar
+    where unpackCheck (Just x) = unpack x
+          unpackCheck _      = Nothing
+
+getStringList :: MonadAction m => String -> m (Maybe [String])
+getStringList = liftM unpackCheck . getVar
+    where unpackCheck (Just x) = unpack x
+          unpackCheck _        = Nothing
