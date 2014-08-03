@@ -25,6 +25,7 @@ removeNothings :: [(a,Maybe b)] -> [(a,b)]
 removeNothings (x:xs) = case snd x of
                           Just a  -> (fst x, a) : removeNothings xs
                           Nothing -> removeNothings xs
+removeNothings []     = []
 
 instance Variable a => Variable [(String, a)] where
     pack   = VarAlist . mapSnds pack
@@ -67,3 +68,8 @@ varGet = liftM unpackCheck . getVar
 
 varPut :: (MonadAction m, Variable a) => String -> a -> m ()
 varPut k = putVar k . pack
+
+varMod :: (MonadAction m, Variable a) => String -> (a -> a) -> m ()
+varMod k f = varGet k >>= testVar
+    where testVar (Just x) = varPut k . f $ x
+          testVar Nothing = return ()
