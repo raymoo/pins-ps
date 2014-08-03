@@ -11,10 +11,24 @@ type Pass = String
 
 data Var = VarString String
          | VarArray [Var]
+         | VarAlist [(String, Var)]
 
 class Variable a where
     pack   :: a -> Var
     unpack :: Var -> Maybe a
+
+mapSnds :: (a -> b) -> [(c,a)] -> [(c,b)]
+mapSnds f = map (mapSnd f)
+    where mapSnd f (x,y) = (x,f y)
+
+removeNothings :: [(a,Maybe b)] -> [(a,b)]
+removeNothings (x:xs) = case snd x of
+                          Just a  -> (fst x, a) : removeNothings xs
+                          Nothing -> removeNothings xs
+
+instance Variable a => Variable [(String, a)] where
+    pack   = VarAlist . mapSnds pack
+    unpack (VarAlist as) = Just . removeNothings . mapSnds unpack $ as
 
 instance Variable String where
     pack = VarString
@@ -46,13 +60,8 @@ sendPm u m = command ("/pm " ++ u ++ ',' : m)
 command :: MonadAction m => String -> m ()
 command = send . ('|' :)
 
-getString :: MonadAction m => String -> m (Maybe String)
-getString = liftM unpackCheck . getVar
-    where unpackCheck (Just x) = unpack x
-          unpackCheck _      = Nothing
-
-getStringList :: MonadAction m => String -> m (Maybe [String])
-getStringList = liftM unpackCheck . getVar
+varGet :: (Variable a, MonadAction m) => String -> m (Maybe a)
+varGet = liftM unpackCheck . getVar
     where unpackCheck (Just x) = unpack x
           unpackCheck _        = Nothing
 
