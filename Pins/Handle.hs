@@ -1,21 +1,18 @@
-module Pins.Handle ( Action(..), handle ) where
+module Pins.Handle ( handle ) where
 
 import Pins.Handle.Parse
-import Pins.Handle.Actions.Base
-import Pins.Handle.Actions
+import Pins.Handle.MonadAction
 import Pins.Handle.Triggers
-import Pins.Bot.Inputs
-
 import Data.Maybe
 
-passTriggers :: MessageInfo -> [Trigger] -> [Action]
-passTriggers mi = concatMap (doTrigger mi) . filter (checkTrigger mi)
+passTriggers :: MonadAction m => MessageInfo -> [Trigger] -> m ()
+passTriggers mi = mapM_ (doTrigger mi) . filter (checkTrigger mi)
 
 checkTrigger :: MessageInfo -> Trigger -> Bool
 checkTrigger mi t = test t mi
 
-doTrigger :: MessageInfo -> Trigger -> [Action]
-doTrigger mi t = act t (mi { inputs = getInputResults (tInputs t) })
+doTrigger :: MonadAction m => MessageInfo -> Trigger -> m ()
+doTrigger mi t = act t mi
 
 defaultMInfo :: MessageInfo
 defaultMInfo = MessageInfo "idleThoughts"
@@ -23,22 +20,17 @@ defaultMInfo = MessageInfo "idleThoughts"
                            ""
                            ' '
                            ""
-                           Print
+                           printLn
 
-
-
-                           []
-
-handle :: String -> [Action]
+handle :: MonadAction m => String -> m ()
 handle = makeAction . parseMessage
 
-makeAction :: Message -> [Action]
-makeAction (ChallStr ckey chall) = [ Print "Received Challenge"
-                                   , Login ckey chall
-                                   , Print "Sending response"
-                                   , Send "|/join yuyukofanclub"
-                                   ]
-makeAction m = maybe [Print ("Unhandled Message: " ++ show m)] (`passTriggers` triggerList) (makeMInfo m)
+makeAction :: MonadAction m => Message -> m ()
+makeAction (ChallStr ckey chall) = printLn "Received Challenge" >>
+                                   login ckey chall >>
+                                   printLn "Sending response" >>
+                                   command "/join yuyukofanclub"
+makeAction m = maybe (printLn $ "Unhandled Message: " ++ show m) (`passTriggers` triggerList) (makeMInfo m)
 
 safeHead :: [a] -> Maybe a
 safeHead (x:xs) = Just x
@@ -62,8 +54,3 @@ makeMInfo (Pm u w)     = Just defaultMInfo { mType = "pm"
                                            }
 makeMInfo _            = Nothing
 
-getInputResults :: [(String, Input)] -> [(String, InputResult)]
-getInputResults xs = zip (map fst xs) (map (getInputResult . snd) xs)
-
-getInputResult :: Input -> InputResult --Placeholder Function
-getInputResult (ConstantString s) = InputString s
