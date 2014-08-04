@@ -77,8 +77,18 @@ getArgs = map dropLeadSpaces . LS.splitOn ","
 aListSet :: Eq k => k -> a -> [(k,a)] -> [(k,a)] -- Very inefficient (O(n)) modification for associated lists.
 aListSet k x = ((k, x) :) . aListDel k
 
+aListSetVar :: (Variable a, MonadAction m) => Key -> Key -> a -> m ()
+aListSetVar k k' x = varGet k >>=
+                     varPut k . aListSet k' x . fromMaybe []
+
 aListDel :: Eq k => k -> [(k,a)] -> [(k,a)] -- O(n) deletion function
 aListDel k = filter ((k/=) . fst)
+
+aListDelVarString :: MonadAction m => Key -> Key -> m ()
+aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>= doTheDel
+    where doTheDel var = case var of
+                           Nothing -> return ()
+                           Just x  -> varPut k . aListDel k' $ x
 
 -- Test trigger: Tests current basic functionality
 testCheck :: Trigger
@@ -114,10 +124,8 @@ sokuHost = Trigger (startsWith "!host " <&&> typeIs "c")
 recHost :: Act
 recHost mi = case drop 6 . what $ mi of
                [] -> respond mi "You need to specify hosting info"
-               s  -> putBack `liftM` varGet "soku" >>=
-                     varPut "soku" >>
+               s  -> aListSetVar "soku" (condenseNick . who $ mi) s >>
                      respond mi (who mi ++ " is hosting at " ++ s)
-                   where putBack = aListSet (condenseNick . who $ mi) s . fromMaybe []
 
 -- Hosting Trigger: Get hosting info
 sokuHosting :: Trigger
@@ -143,6 +151,6 @@ stopHosting mi = theVar >>= removeHost
           theVar = fromMaybe [] `liftM` varGet "soku"
           removeHost :: (MonadAction m) => [(String, String)] -> m ()
           removeHost xs = case lookup (condenseNick . who $ mi) xs of
-                            Just x  -> varMod "soku" (aListDel (condenseNick . who $ mi) :: [(String,String)] -> [(String,String)]) >>
+                            Just x  -> aListDelVarString "soku" (condenseNick . who $ mi) >>
                                        respond mi (who mi ++ " is no longer hosting.")
                             Nothing -> respond mi "You are not hosting!"
