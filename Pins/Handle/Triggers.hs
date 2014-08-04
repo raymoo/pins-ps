@@ -147,5 +147,5 @@ stopHosting mi = theVar >>= removeHost
           removeHost :: (MonadAction m) => [(String, String)] -> m ()
           removeHost xs = case lookup (condenseNick . who $ mi) xs of
                             Just x  -> varMod "soku" (aListDel (condenseNick . who $ mi) :: [(String,String)] -> [(String,String)]) >>
-                                       respond mi (who mi ++ "is no longer hosting.")
+                                       respond mi (who mi ++ " is no longer hosting.")
                             Nothing -> respond mi "You are not hosting!"
