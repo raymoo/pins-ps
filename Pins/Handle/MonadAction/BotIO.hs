@@ -14,7 +14,16 @@ data Bot = Bot { bName :: String
                , bPass :: String 
                , bConn :: WS.Connection
                , vars  :: M.Map String Var
+               , bConfig :: Config
                }
+
+data Config = Config { name   :: String
+                     , pass   :: String
+                     , server :: String
+                     , port   :: Int
+                     , path   :: String
+                     } deriving (Show)
+
 
 blankVar :: M.Map String Var
 blankVar = M.empty
