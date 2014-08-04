@@ -20,16 +20,6 @@ class Variable a where
 mapSnd :: (a -> b) -> (c,a) -> (c,b)
 mapSnd f (x,y) = (x,f y)
 
-mapSnds :: (a -> b) -> [(c,a)] -> [(c,b)]
-mapSnds f = map (mapSnd f)
-    where mapSnd f (x,y) = (x,f y)
-
-removeNothings :: [(a,Maybe b)] -> [(a,b)]
-removeNothings (x:xs) = case snd x of
-                          Just a  -> (fst x, a) : removeNothings xs
-                          Nothing -> removeNothings xs
-removeNothings []     = []
-
 instance Variable a => Variable (String, a) where
     pack = VarPair . mapSnd pack
     unpack (VarPair x) = (unpack . snd $ x) >>= Just . (,) (fst x)
