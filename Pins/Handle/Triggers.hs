@@ -87,7 +87,7 @@ testCheck = Trigger (contentIs "!test")
 
 -- Anonymous message trigger: use !mess destination, message to send a message
 anonMessage :: Trigger
-anonMessage = Trigger (combine [startsWith "!mess", typeIs "pm"])
+anonMessage = Trigger (startsWith "!mess" <&&> typeIs "pm")
                       sendAnonMessage
 
 sendAnonMessage :: Act
@@ -108,10 +108,7 @@ about = Trigger (contentIs "!about")
 
 -- Host trigger: Record hosting info
 sokuHost :: Trigger
-sokuHost = Trigger (combine [ startsWith "!host "
-                            , typeIs "c"
-                            ]
-                   )
+sokuHost = Trigger (startsWith "!host " <&&> typeIs "c")
                    recHost
 
 recHost :: Act
