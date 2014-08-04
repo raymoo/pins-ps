@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, OverlappingInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Pins.Handle.MonadAction where
 
@@ -9,13 +9,16 @@ type Room = String
 type User = String
 type Pass = String
 
-data Var = VarString String
+data Var = VarChar Char
          | VarArray [Var]
-         | VarAlist [(String, Var)]
+         | VarPair (String, Var)
 
 class Variable a where
     pack   :: a -> Var
     unpack :: Var -> Maybe a
+
+mapSnd :: (a -> b) -> (c,a) -> (c,b)
+mapSnd f (x,y) = (x,f y)
 
 mapSnds :: (a -> b) -> [(c,a)] -> [(c,b)]
 mapSnds f = map (mapSnd f)
@@ -27,14 +30,15 @@ removeNothings (x:xs) = case snd x of
                           Nothing -> removeNothings xs
 removeNothings []     = []
 
-instance Variable a => Variable [(String, a)] where
-    pack   = VarAlist . mapSnds pack
-    unpack (VarAlist as) = Just . removeNothings . mapSnds unpack $ as
+instance Variable a => Variable (String, a) where
+    pack = VarPair . mapSnd pack
+    unpack (VarPair x) = (unpack . snd $ x) >>= Just . (,) (fst x)
+    unpack _           = Nothing
 
-instance Variable String where
-    pack = VarString
-    unpack (VarString s) = Just s
-    unpack _             = Nothing
+instance Variable Char where
+    pack = VarChar
+    unpack (VarChar s) = Just s
+    unpack _           = Nothing
 
 instance Variable a => Variable [a] where
     pack = VarArray . map pack
