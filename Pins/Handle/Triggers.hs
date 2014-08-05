@@ -33,11 +33,15 @@ triggerList = [ testCheck
               , sokuHost
               , sokuHosting
               , sokuUnhost
+              , topic
               ]
 
 -- Utility Functions: Common Tests
 contentIs :: String -> Test
 contentIs s = (s==) . what
+
+rankIn :: String -> Test
+rankIn s = flip elem s . rank
 
 typeIs :: String -> Test
 typeIs s = (s==) . mType
@@ -52,10 +56,10 @@ anyTest :: [Test] -> Test
 anyTest ts = or . flip map ts . flip ($)
 
 (<&&>) :: Test -> Test -> Test
-t1 <&&> t2 = combine [t1,t2]
+(<&&>) t1 t2 mi = t1 mi && t2 mi
 
 (<||>) :: Test -> Test -> Test
-t1 <||> t2 = anyTest [t1,t2]
+(<||>) t1 t2 mi = t1 mi || t2 mi
 
 -- Utility Functions: Common Actions
 say :: String -> Act
@@ -154,3 +158,18 @@ stopHosting mi = theVar >>= removeHost
                             Just x  -> aListDelVarString "soku" (condenseNick . who $ mi) >>
                                        respond mi (who mi ++ " is no longer hosting.")
                             Nothing -> respond mi "You are not hosting!"
+
+-- Topic Trigger: Can set or get the topic
+topic :: Trigger
+topic = Trigger (startsWith "!topic" <&&> typeIs "c" <&&> rankIn "%@#&~")
+                doTopic
+
+doTopic :: Act
+doTopic mi = printLn "trigger activated" >>
+             let rem = (drop 7 . what $ mi)
+             in case rem of
+                  [] -> varGet k >>=    -- They want the topic
+                        sendChat (room mi) . ("/wall Topic: "++) . fromMaybe "Nothing"
+                  s  -> varPut k rem >> --They are setting the topic
+                        sendChat (room mi) ("/wall Topic: " ++ rem)
+                 where k = "topic_" ++ room mi
