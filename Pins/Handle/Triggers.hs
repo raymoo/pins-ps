@@ -165,8 +165,7 @@ topic = Trigger (startsWith "!topic" <&&> typeIs "c" <&&> rankIn "%@#&~")
                 doTopic
 
 doTopic :: Act
-doTopic mi = printLn "trigger activated" >>
-             let rem = (drop 7 . what $ mi)
+doTopic mi = let rem = (drop 7 . what $ mi)
              in case rem of
                   [] -> varGet k >>=    -- They want the topic
                         sendChat (room mi) . ("/wall Topic: "++) . fromMaybe "Nothing"
