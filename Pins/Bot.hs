@@ -6,7 +6,7 @@ import           Pins.Handle
 import           Control.Monad.State.Lazy
 import qualified Network.WebSockets as WS
 import           Control.Monad
-import           Control.Exception.Base (catch)
+import           Control.Exception (catch)
 import qualified Data.Text          as T
 
 bot :: Config -> WS.ClientApp ()

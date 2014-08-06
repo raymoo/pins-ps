@@ -6,6 +6,7 @@ import           Pins.Handle.Triggers.Imports
 import           Control.Monad
 import           Data.Char
 import           Data.Maybe
+import           Data.List       as L
 import qualified Data.List.Split as LS
 
 data MessageInfo = MessageInfo { mType   :: String   -- What was it - chat, pm, join message, etc?
@@ -78,6 +79,10 @@ dropLeadSpaces = dropWhile (' '==)
 getArgs :: String -> [String]
 getArgs = map dropLeadSpaces . LS.splitOn ","
 
+getSomeArgs ::Int ->  String -> ([String], String)
+getSomeArgs n s = let ss = LS.splitOn "," s
+                  in (map dropLeadSpaces $ (take n) ss, L.intercalate "," . drop n $ ss)
+
 aListSet :: Eq k => k -> a -> [(k,a)] -> [(k,a)] -- Very inefficient (O(n)) modification for associated lists.
 aListSet k x = ((k, x) :) . aListDel k
 
@@ -105,15 +110,16 @@ anonMessage = Trigger (startsWith "!mess" <&&> typeIs "pm")
                       sendAnonMessage
 
 sendAnonMessage :: Act
-sendAnonMessage mi = anonMessMake . getArgs . drop 6 $ what mi
-    where anonMessMake ss
-              | length ss >= 2 = case ss !! 0 of
-                                   ('#':xs) -> sendChat (drop 1 (ss !! 0)) ("Anonymous Message: " ++ ss !! 1)
-                                   _        -> sendPm (ss !! 0) ("Anonymous Message: " ++ ss !! 1) >>
+sendAnonMessage mi = anonMessMake . args $ mi
+    where anonMessMake (ss, s)
+              | not . null $ ss = case ss !! 0 of
+                                   ('#':xs) -> sendChat (drop 1 (ss !! 0)) ("Anonymous Message: " ++ s)
+                                   _        -> sendPm (ss !! 0) ("Anonymous Message: " ++ s) >>
                                                printLn ("Sending pm to " ++ ss !! 0)
               | otherwise      = anonErrorMessage
           anonErrorMessage = respond mi "Usage is: !mess [#]destination, message" >>
                              respond mi "The # is only necessary for sending to rooms"
+          args = getSomeArgs 1 . drop 6 . what
 
 -- About trigger: Displays bot info
 about :: Trigger
