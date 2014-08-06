@@ -6,7 +6,8 @@ import           Pins.Handle.Triggers.Imports
 import           Control.Monad
 import           Data.Char
 import           Data.Maybe
-import           Data.List       as L
+import qualified Data.Foldable   as F
+import qualified Data.List       as L
 import qualified Data.List.Split as LS
 
 data MessageInfo = MessageInfo { mType   :: String   -- What was it - chat, pm, join message, etc?
@@ -81,7 +82,7 @@ getArgs = map dropLeadSpaces . LS.splitOn ","
 
 getSomeArgs ::Int ->  String -> ([String], String)
 getSomeArgs n s = let ss = LS.splitOn "," s
-                  in (map dropLeadSpaces $ (take n) ss, L.intercalate "," . drop n $ ss)
+                  in (map dropLeadSpaces $ take n ss, L.intercalate "," . drop n $ ss)
 
 aListSet :: Eq k => k -> a -> [(k,a)] -> [(k,a)] -- Very inefficient (O(n)) modification for associated lists.
 aListSet k x = ((k, x) :) . aListDel k
@@ -94,10 +95,7 @@ aListDel :: Eq k => k -> [(k,a)] -> [(k,a)] -- O(n) deletion function
 aListDel k = filter ((k/=) . fst)
 
 aListDelVarString :: MonadAction m => Key -> Key -> m ()
-aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>= doTheDel
-    where doTheDel var = case var of
-                           Nothing -> return ()
-                           Just x  -> varPut k . aListDel k' $ x
+aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>= (`F.forM_` (varPut k . aListDel k'))
 
 -- Test trigger: Tests current basic functionality
 testCheck :: Trigger
