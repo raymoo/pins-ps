@@ -95,7 +95,8 @@ aListDel :: Eq k => k -> [(k,a)] -> [(k,a)] -- O(n) deletion function
 aListDel k = filter ((k/=) . fst)
 
 aListDelVarString :: MonadAction m => Key -> Key -> m ()
-aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>= (`F.forM_` (varPut k . aListDel k'))
+aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>=
+                         (`F.forM_` (varPut k . aListDel k'))
 
 -- Test trigger: Tests current basic functionality
 testCheck :: Trigger
