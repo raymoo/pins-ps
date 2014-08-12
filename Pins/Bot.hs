@@ -6,9 +6,8 @@ import           Pins.Handle
 import           Control.Monad.State.Lazy
 import qualified Network.WebSockets as WS
 import           Control.Monad
-import           Control.Exception (Exception, catch)
+import           Control.Exception (Exception, catch, SomeException)
 import qualified Data.Text          as T
-import           System.IO.Streams.Attoparsec (ParseException)
 
 -- catches exceptions in the StateT s IO monad (not thread safe)
 catchStateTIO    :: Exception e => StateT s IO a -> (e -> StateT s IO a) -> StateT s IO a
@@ -32,7 +31,7 @@ loop :: StateT Bot IO ()
 loop = catchStateTIO (forever $ get >>= 
                       lift . getData >>= 
                       handle)
-                     ((\e -> get >>= liftIO . startBotAgain) :: ParseException -> StateT Bot IO ())
+                     ((\e -> get >>= liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
 
 getData :: Bot -> IO String
 getData = liftM T.unpack . WS.receiveData . bConn
