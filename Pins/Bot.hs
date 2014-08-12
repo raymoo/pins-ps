@@ -6,8 +6,18 @@ import           Pins.Handle
 import           Control.Monad.State.Lazy
 import qualified Network.WebSockets as WS
 import           Control.Monad
-import           Control.Exception (catch)
+import           Control.Exception (Exception, catch)
 import qualified Data.Text          as T
+import           System.IO.Streams.Attoparsec (ParseException)
+
+-- catches exceptions in the StateT s IO monad (not thread safe)
+catchStateTIO    :: Exception e => StateT s IO a -> (e -> StateT s IO a) -> StateT s IO a
+catchStateTIO x f = do 
+                       initial <- get
+                       (res, s) <- liftIO $ catch (runStateT x initial)
+                                                  (flip runStateT initial . f)
+                       put s
+                       return res
 
 bot :: Config -> WS.ClientApp ()
 bot config conn = do
@@ -19,13 +29,13 @@ runBot :: Config -> IO ()
 runBot c = WS.runClient (server c) (port c) (path c) (bot c)
 
 loop :: StateT Bot IO ()
-loop = forever $ get >>= 
-                 lift . getData >>= 
-                 handle
+loop = catchStateTIO (forever $ get >>= 
+                      lift . getData >>= 
+                      handle)
+                     ((\e -> get >>= liftIO . startBotAgain) :: ParseException -> StateT Bot IO ())
 
 getData :: Bot -> IO String
-getData b = catch (liftM T.unpack . WS.receiveData . bConn $ b) ((\e -> startBotAgain b >>
-                                                                       return "This will never return") :: WS.ConnectionException -> IO String)
+getData = liftM T.unpack . WS.receiveData . bConn
 
 startBotAgain :: Bot -> IO ()
 startBotAgain b = WS.runClient (server c) (port c) (path c) (\x -> evalStateT loop b { bConn = x })
