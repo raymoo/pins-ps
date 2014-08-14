@@ -28,12 +28,12 @@ runBot :: Config -> IO ()
 runBot c = WS.runClient (server c) (port c) (path c) (bot c)
 
 loop :: StateT Bot IO ()
-loop = catchStateTIO (forever $ get >>= 
-                      lift . getData >>= 
-                      handle)
-                     ((\e -> (liftIO . putStrLn . show $ e) >> 
-                             get >>= 
-                             liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
+loop = forever $ catchStateTIO (get >>= 
+                                lift . getData >>= 
+                                handle)
+                               ((\e -> (liftIO . putStrLn . show $ e) >> 
+                                 get >>= 
+                                 liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
 
 getData :: Bot -> IO String
 getData = liftM T.unpack . WS.receiveData . bConn
