@@ -31,7 +31,9 @@ loop :: StateT Bot IO ()
 loop = catchStateTIO (forever $ get >>= 
                       lift . getData >>= 
                       handle)
-                     ((\e -> get >>= liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
+                     ((\e -> (liftIO . putStrLn . show $ e) >> 
+                             get >>= 
+                             liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
 
 getData :: Bot -> IO String
 getData = liftM T.unpack . WS.receiveData . bConn
