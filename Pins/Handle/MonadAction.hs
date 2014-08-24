@@ -36,11 +36,14 @@ instance Variable a => Variable [a] where
     unpack _             = Nothing
 
 class Monad m => MonadAction m where
-    send :: String -> m ()
-    login :: Int -> String -> m ()
-    printLn :: String -> m () 
-    putVar :: String -> Var -> m ()
-    getVar :: String -> m (Maybe Var)
+    send :: String -> m ()                 -- send a message to the server
+    login :: Int -> String -> m ()         -- login with a challenge key id and a challenge
+    printLn :: String -> m ()              -- print a line to standard output
+    putVar :: String -> Var -> m ()        -- put a variable
+    getVar :: String -> m (Maybe Var)      -- possibly get a variable
+    duraGet :: String -> m String          -- get a string from durable storage (similar to file I/O)
+    duraStore :: String -> String -> m ()  -- put a string in durabl storage, adding a newline
+    duraAppend :: String -> String -> m () -- append a string to a string in durable storage, adding a newline
 
 constant :: MonadAction m => a -> m a
 constant = return
