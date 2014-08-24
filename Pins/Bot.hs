@@ -33,7 +33,7 @@ loop :: StateT Bot IO ()
 loop = forever $ catchStateTIO (get >>= 
                                 lift . getData >>= 
                                 handle)
-                               ((\e -> (liftIO . putStrLn . show $ e) >> 
+                               ((\e -> (liftIO . print $ e) >> 
                                  get >>= 
                                  liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
 
@@ -41,5 +41,7 @@ getData :: Bot -> IO String
 getData = liftM T.unpack . WS.receiveData . bConn
 
 startBotAgain :: Bot -> IO ()
-startBotAgain b = WS.runClient (server c) (port c) (path c) (\x -> evalStateT loop b { bConn = x })
+startBotAgain b = putStrLn "Trying to reconnect/restart..." >>
+                  catch (WS.runClient (server c) (port c) (path c) (\x -> evalStateT loop b { bConn = x }))
+                        ((\_ -> startBotAgain b) :: SomeException -> IO ())
     where c = bConfig b
