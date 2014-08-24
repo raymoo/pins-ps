@@ -36,6 +36,7 @@ triggerList = [ testCheck
               , sokuHosting
               , sokuUnhost
               , topic
+              , testDur
               ]
 
 -- Utility Functions: Common Tests
@@ -132,9 +133,17 @@ sokuHost = Trigger (startsWith "!host " <&&> typeIs "c")
 
 recHost :: Act
 recHost mi = case drop 6 . what $ mi of
-               [] -> respond mi "You need to specify hosting info"
+               [] -> recHostOnly mi
                s  -> aListSetVar "soku" (condenseNick . who $ mi) s >>
-                     respond mi (who mi ++ " is hosting at " ++ s)
+                     respond mi (who mi ++ " is hosting at " ++ s) >>
+                     duraStore ("soku_" ++ (condenseNick $ who mi)) s
+
+recHostOnly :: Act
+recHostOnly mi = duraGet ("soku_" ++ (condenseNick $ who mi)) >>= \s ->
+                 case s of
+                   [] -> respond mi "You don't have any data in here"
+                   s -> aListSetVar "soku" (condenseNick . who $ mi) s >>
+                        respond mi (who mi ++ " is hosting at " ++ s)
 
 -- Hosting Trigger: Get hosting info
 sokuHosting :: Trigger
@@ -177,3 +186,14 @@ doTopic mi = let rem = (drop 7 . what $ mi)
                   s  -> varPut k rem >> --They are setting the topic
                         sendChat (room mi) ("/wall Topic: " ++ rem)
                  where k = "topic_" ++ room mi
+
+-- Test Durable storage
+testDur :: Trigger
+testDur = Trigger (startsWith "!testDur")
+                  testTheDur
+
+testTheDur :: Act
+testTheDur mi = respond mi "Storing your test" >>
+                duraStore "test" (what mi) >>
+                duraGet "test" >>= \ts ->
+                respond mi ("Retrieved: " ++ ts)
