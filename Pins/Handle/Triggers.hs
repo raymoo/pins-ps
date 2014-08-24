@@ -141,7 +141,7 @@ recHost mi = case drop 6 . what $ mi of
 recHostOnly :: Act
 recHostOnly mi = duraGet ("soku_" ++ condenseNick (who mi)) >>= \s ->
                  case s of
-                   [] -> respond mi "You don't have any data in here"
+                   [] -> respond mi "You must have explicitly given an address:port at least once for me to remember it."
                    s -> aListSetVar "soku" (condenseNick . who $ mi) s >>
                         respond mi (who mi ++ " is hosting at " ++ s)
 
