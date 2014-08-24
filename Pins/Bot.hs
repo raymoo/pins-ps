@@ -6,6 +6,7 @@ import           Pins.Handle
 import           Control.Monad.State.Lazy
 import qualified Network.WebSockets as WS
 import           Control.Monad
+import           Data.Acid
 import           Control.Exception (Exception, catch, SomeException)
 import qualified Data.Text          as T
 
@@ -21,7 +22,8 @@ catchStateTIO x f = do
 bot :: Config -> WS.ClientApp ()
 bot config conn = do
   putStrLn "Connected"
-  evalStateT loop b
+  as <- openLocalState initialPerma
+  evalStateT loop (b as)
   where b = Bot (name config) (pass config) conn blankVar config
 
 runBot :: Config -> IO ()
