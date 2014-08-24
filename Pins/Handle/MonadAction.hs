@@ -42,7 +42,7 @@ class Monad m => MonadAction m where
     putVar :: String -> Var -> m ()        -- put a variable
     getVar :: String -> m (Maybe Var)      -- possibly get a variable
     duraGet :: String -> m String          -- get a string from durable storage (similar to file I/O)
-    duraStore :: String -> String -> m ()  -- put a string in durabl storage, adding a newline
+    duraStore :: String -> String -> m ()  -- put a string in durable storage
     duraAppend :: String -> String -> m () -- append a string to a string in durable storage, adding a newline
 
 constant :: MonadAction m => a -> m a
