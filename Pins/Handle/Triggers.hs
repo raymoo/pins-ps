@@ -136,10 +136,10 @@ recHost mi = case drop 6 . what $ mi of
                [] -> recHostOnly mi
                s  -> aListSetVar "soku" (condenseNick . who $ mi) s >>
                      respond mi (who mi ++ " is hosting at " ++ s) >>
-                     duraStore ("soku_" ++ (condenseNick $ who mi)) s
+                     duraStore ("soku_" ++ condenseNick (who mi)) s
 
 recHostOnly :: Act
-recHostOnly mi = duraGet ("soku_" ++ (condenseNick $ who mi)) >>= \s ->
+recHostOnly mi = duraGet ("soku_" ++ condenseNick (who mi)) >>= \s ->
                  case s of
                    [] -> respond mi "You don't have any data in here"
                    s -> aListSetVar "soku" (condenseNick . who $ mi) s >>

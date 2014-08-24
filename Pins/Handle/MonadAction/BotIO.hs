@@ -71,13 +71,13 @@ appendStore k a = wrap $ M.insertWith appendWithNl k a
 getStore :: String -> PermaStore -> String
 getStore k = M.findWithDefault [] k . permaStore
 
-acidWrite :: String -> String -> Update (PermaStore) ()
+acidWrite :: String -> String -> Update PermaStore ()
 acidWrite k = modify . writeStore k
 
-acidAppend :: String -> String -> Update (PermaStore) ()
+acidAppend :: String -> String -> Update PermaStore ()
 acidAppend k = modify . appendStore k
 
-acidGet :: String -> Query (PermaStore) String
+acidGet :: String -> Query PermaStore String
 acidGet k = getStore k `liftM` ask
 
 $(makeAcidic ''PermaStore ['acidWrite, 'acidAppend, 'acidGet])
