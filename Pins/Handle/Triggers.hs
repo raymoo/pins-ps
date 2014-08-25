@@ -151,7 +151,8 @@ sokuHosting = Trigger (contentIs "!hosting" <&&> (typeIs "c" <||> typeIs "pm"))
                       getHosting
 
 getHosting :: Act
-getHosting mi = hostList >>= sendPm (who mi)
+getHosting mi = sendPm (who mi) "Hosts:" >>
+                hostList >>= sendPm (who mi)
     where hostList = (generateList . fromMaybe []) `liftM` varGet "soku"
 
 generateList :: [(String, String)] -> String
