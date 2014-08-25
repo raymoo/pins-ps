@@ -37,6 +37,7 @@ triggerList = [ testCheck
               , sokuUnhost
               , topic
               , testDur
+              , testChan
               ]
 
 -- Utility Functions: Common Tests
@@ -198,3 +199,8 @@ testTheDur mi = respond mi "Storing your test" >>
                 duraStore "test" (what mi) >>
                 duraGet "test" >>= \ts ->
                 respond mi ("Retrieved: " ++ ts)
+
+-- Test Channel: Tests if the queue works
+testChan :: Trigger
+testChan = Trigger (contentIs "!testChan" <&&> typeIs "pm")
+                   (\mi -> respond mi "This is a message\nthat should be\nfiltered")
