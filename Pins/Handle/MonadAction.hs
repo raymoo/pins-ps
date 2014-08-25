@@ -50,10 +50,11 @@ constant = return
 
 sendChat :: MonadAction m => Room -> String -> m ()
 sendChat r m = send chatMessage
-    where chatMessage = r ++ "|" ++ m
+    where chatMessage = unlines . map ((r ++ "|")++) $ lines m
 
 sendPm :: MonadAction m => User -> String -> m ()
-sendPm u m = command ("/pm " ++ u ++ ',' : m)
+sendPm u m = send pmMessage
+    where pmMessage = unlines . map (("|/pm " ++ u ++ ", ") ++) . lines $ m
 
 command :: MonadAction m => String -> m ()
 command = send . ('|' :)

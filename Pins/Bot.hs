@@ -26,7 +26,7 @@ messageSender c tc ti = catch messageLoop
                               (throwTo ti :: SomeException -> IO ()) 
     where messageLoop = forever $ readChan tc >>=
                                   WS.sendTextData c >>
-                                  threadDelay 10000
+                                  threadDelay 100000
 
 bot :: Config -> WS.ClientApp ()
 bot config conn = do
@@ -49,11 +49,22 @@ loop = forever $ catchStateTIO (get >>=
                                  get >>= 
                                  liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
 
+altBot :: Bot -> WS.ClientApp ()
+altBot b conn = do
+  putStrLn "reconnected"
+  chan <- newChan
+  tid <- myThreadId
+  liftIO $ forkIO $ messageSender conn chan tid
+  let bot = b { bConn = conn, messChan = chan }
+  evalStateT loop bot 
+
 getData :: Bot -> IO String
 getData = liftM T.unpack . WS.receiveData . bConn
 
 startBotAgain :: Bot -> IO ()
 startBotAgain b = putStrLn "Trying to reconnect/restart..." >>
-                  catch (WS.runClient (server c) (port c) (path c) (\x -> evalStateT loop b { bConn = x }))
+                  newChan >>= \chan ->
+                  myThreadId >>= \tid ->
+                  catch (WS.runClient (server c) (port c) (path c) (altBot b))
                         ((\_ -> startBotAgain b) :: SomeException -> IO ())
     where c = bConfig b

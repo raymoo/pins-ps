@@ -88,8 +88,8 @@ writeLinesToChan :: Chan a -> [a] -> IO ()
 writeLinesToChan = mapM_ . writeChan 
 
 instance MonadAction (StateT Bot IO) where
-    send s = get >>=
-             liftIO . ($ map T.pack . lines $ s) . writeLinesToChan . messChan
+    send s = messChan <$> get >>= \chan ->
+             liftIO $ writeLinesToChan chan (T.lines . T.pack $ s)
     printLn = liftIO . putStrLn
     login cKey chall = do
       name <- getName
