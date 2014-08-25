@@ -7,7 +7,9 @@ import           Control.Monad.State.Lazy
 import qualified Network.WebSockets as WS
 import           Control.Monad
 import           Data.Acid
-import           Control.Exception (Exception, catch, SomeException)
+import           Control.Concurrent.Chan
+import           Control.Concurrent
+import           Control.Exception (Exception, catch, SomeException(..))
 import qualified Data.Text          as T
 
 -- catches exceptions in the StateT s IO monad (not thread safe)
@@ -19,11 +21,21 @@ catchStateTIO x f = do
                        put s
                        return res
 
+messageSender :: WS.Connection -> Chan T.Text -> ThreadId -> IO ()
+messageSender c tc ti = catch messageLoop
+                              (throwTo ti :: SomeException -> IO ()) 
+    where messageLoop = forever $ readChan tc >>=
+                                  WS.sendTextData c >>
+                                  threadDelay 10000
+
 bot :: Config -> WS.ClientApp ()
 bot config conn = do
   putStrLn "Connected"
   as <- openLocalState initialPerma
-  evalStateT loop (b as)
+  chan <- newChan
+  tid <- myThreadId
+  liftIO $ forkIO $ messageSender conn chan tid
+  evalStateT loop (b as chan)
   where b = Bot (name config) (pass config) conn blankVar config
 
 runBot :: Config -> IO ()

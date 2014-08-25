@@ -12,6 +12,7 @@ import           Data.Acid
 import           Data.Acid.Advanced
 import           Data.Acid.Local
 import           Data.SafeCopy
+import           Control.Concurrent.Chan
 import qualified Network.WebSockets       as WS
 import qualified Data.Text                as T
 import qualified Data.Map                 as M
@@ -22,6 +23,7 @@ data Bot = Bot { bName :: String
                , vars  :: M.Map String Var
                , bConfig :: Config
                , acidState :: AcidState PermaStore
+               , messChan :: Chan T.Text
                }
 
 data Config = Config { name   :: String
@@ -82,10 +84,12 @@ acidGet k = getStore k `liftM` ask
 
 $(makeAcidic ''PermaStore ['acidWrite, 'acidAppend, 'acidGet])
 
+writeLinesToChan :: Chan a -> [a] -> IO ()
+writeLinesToChan = mapM_ . writeChan 
 
 instance MonadAction (StateT Bot IO) where
-    send s = getConn >>= (\b ->
-                          liftIO . WS.sendTextData b . T.pack $ s)
+    send s = get >>=
+             liftIO . ($ map T.pack . lines $ s) . writeLinesToChan . messChan
     printLn = liftIO . putStrLn
     login cKey chall = do
       name <- getName
