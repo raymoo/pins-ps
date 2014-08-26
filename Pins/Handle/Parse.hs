@@ -53,7 +53,7 @@ message = try (room >>= chooseParse) <|> try (chooseParse "") <|> baseStr
 -- Deciders
 chooseParse :: String -> Parser Message
 chooseParse r = mLex >>= chooseMore
-    where chooseMore "c"        = try (chat r) <|> return Unknown
+    where chooseMore "c:"       = try (mLex *> chat r) <|> return Unknown
           chooseMore "challstr" = try challStr <|> return Unknown
           chooseMore "pm"       = try pm <|> return Unknown
           chooseMore _          = return Unknown
