@@ -35,6 +35,7 @@ triggerList = [ testCheck
               , sokuHost
               , sokuHosting
               , sokuUnhost
+              , kickHost
               , topic
               , testDur
               , testChan
@@ -166,14 +167,32 @@ sokuUnhost = Trigger (contentIs "!unhost" <&&> typeIs "c")
                      stopHosting
 
 stopHosting :: Act
-stopHosting mi = theVar >>= removeHost
-    where theVar :: (MonadAction m) => m [(String, String)]
-          theVar = fromMaybe [] `liftM` varGet "soku"
-          removeHost :: (MonadAction m) => [(String, String)] -> m ()
-          removeHost xs = case lookup (condenseNick . who $ mi) xs of
-                            Just x  -> aListDelVarString "soku" (condenseNick . who $ mi) >>
-                                       respond mi (who mi ++ " is no longer hosting.")
-                            Nothing -> respond mi "You are not hosting!"
+stopHosting mi = (removeHost . who $ mi) >>= \result ->
+                 case result of
+                   True  -> respond mi (who mi ++ " is no longer hosting")
+                   False -> respond mi "You are not hosting"
+
+removeHost :: (MonadAction m) => String -> m Bool
+removeHost s = sokuVar >>= \var ->
+               case lookup (condenseNick s) var of
+                 Just x  -> aListDelVarString "soku" (condenseNick s) >>
+                            return True
+                 Nothing -> return False
+    where sokuVar = fromMaybe [] `liftM` varGet "soku" :: (MonadAction m) => m [(String, String)]
+
+-- Kick Host: Kick a host
+kickHost :: Trigger
+kickHost = Trigger (startsWith "!kickhost " <&&> typeIs "c" <&&> rankIn "%@#&~")
+                   kickAHost
+
+kickAHost :: Act
+kickAHost mi = case drop 10 . what $ mi of
+                 []   -> respond mi "Specify a user to kick"
+                 user -> removeHost user >>= \res ->
+                         case res of
+                           True  -> respond mi "User removed."
+                           False -> respond mi $ "User " ++ user ++ " is not hosting."
+                                   
 
 -- Topic Trigger: Can set or get the topic
 topic :: Trigger

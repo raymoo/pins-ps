@@ -54,7 +54,7 @@ sendChat r m = send chatMessage
 
 sendPm :: MonadAction m => User -> String -> m ()
 sendPm u m = send pmMessage
-    where pmMessage = unlines . map (("|/pm " ++ u ++ ", ") ++) . lines $ m
+    where pmMessage = unlines . map (("|/pm " ++ u ++ ",") ++) . lines $ m
 
 command :: MonadAction m => String -> m ()
 command = send . ('|' :)
