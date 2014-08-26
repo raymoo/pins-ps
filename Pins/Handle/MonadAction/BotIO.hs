@@ -114,3 +114,7 @@ instance MonadAction (StateT Bot IO) where
     duraAppend k a = acidState <$> get >>= \as ->
                      liftIO $ update' as (AcidAppend k a)
     getRooms = (rooms . bConfig) `liftM` get
+    setJoinTime s t = get >>= \b ->
+                      put . setTimestamps b . M.insert s t $ timestamps b
+        where setTimestamps b ts = b { timestamps = ts }
+    getJoinTime s = M.findWithDefault 0 s . timestamps <$> get

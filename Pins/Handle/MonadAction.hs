@@ -44,7 +44,9 @@ class Monad m => MonadAction m where
     duraGet :: String -> m String          -- get a string from durable storage (similar to file I/O)
     duraStore :: String -> String -> m ()  -- put a string in durable storage
     duraAppend :: String -> String -> m () -- append a string to a string in durable storage, adding a newline
-    getRooms :: m [String]                    -- list of rooms to join
+    getRooms :: m [String]                 -- list of rooms to join
+    setJoinTime :: String -> Integer -> m ()
+    getJoinTime :: String -> m Integer
 
 constant :: MonadAction m => a -> m a
 constant = return
