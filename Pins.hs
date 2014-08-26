@@ -5,7 +5,7 @@ import Control.Monad
 import System.Directory
 
 generateConfig :: [String] -> Config
-generateConfig ss = Config (arg 0) (arg 1) (arg 2) (read . arg $ 3) (arg 4) (lines $ arg 5) --VERY UGLY AND BAD FUNCTION, CHANGE TO USE YAML OR SOMETHING LATER
+generateConfig ss = Config (arg 0) (arg 1) (arg 2) (read . arg $ 3) (arg 4) (drop 5 ss) --VERY UGLY AND BAD FUNCTION, CHANGE TO USE YAML OR SOMETHING LATER
     where arg = (ss!!)
 
 testConfig :: [String] -> IO Config
