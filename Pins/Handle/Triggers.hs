@@ -131,7 +131,7 @@ about = Trigger (contentIs "!about")
 
 -- Host trigger: Record hosting info
 sokuHost :: Trigger
-sokuHost = Trigger (startsWith "!host " <&&> typeIs "c")
+sokuHost = Trigger ((contentIs "!host" <||> startsWith "!host ") <&&> typeIs "c")
                    recHost
 
 recHost :: Act
