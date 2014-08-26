@@ -30,25 +30,30 @@ dLex = maybeRead <$> mLex >>= check
           check (Just a) = return a
 
 contLex :: Parser String
-contLex = char '|' *> many anyChar
+contLex = char '|' *> many (noneOf "\n")
 
 room :: Parser String
-room = char '>' *> many (noneOf "\n") <* char '\n'
+room = char '>' *> many (noneOf "\n")
 
 inMessage :: Parser String
-inMessage = many (noneOf "|")
+inMessage = many (noneOf "|\n")
 
 getArgs :: Parser [String]
 getArgs = many mLex
 
 -- Main message parser
-parseMessage :: String -> Message
-parseMessage s = case parse message "message parsing" s of
+parseMessage :: String -> [Message]
+parseMessage s = case parse messages "message parsing" s of
                  Right a -> a
-                 Left _ -> Unknown
+                 Left _ -> [Unknown]
 
-message :: Parser Message
-message = try (room >>= chooseParse) <|> try (chooseParse "") <|> baseStr
+messages :: Parser [Message]
+messages =  room >>= \r ->
+            many (char '\n' *> message r) <|>
+            liftA2 (:) (message "") (many (char '\n' *> message ""))
+
+message :: String -> Parser Message
+message r = try (chooseParse r) <|> try (chooseParse r) <|> baseStr
 
 -- Deciders
 chooseParse :: String -> Parser Message

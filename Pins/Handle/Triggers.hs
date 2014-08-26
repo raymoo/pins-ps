@@ -6,6 +6,7 @@ import           Pins.Handle.Triggers.Imports
 import           Control.Monad
 import           Data.Char
 import           Data.Maybe
+import           Safe
 import qualified Data.Foldable   as F
 import qualified Data.List       as L
 import qualified Data.List.Split as LS
@@ -36,6 +37,7 @@ triggerList = [ anonMessage
               , sokuUnhost
               , kickHost
               , topic
+              , suck
 --              , testDur
 --              , testChan
 --              , testCheck
@@ -227,3 +229,17 @@ testTheDur mi = respond mi "Storing your test" >>
 --testChan :: Trigger
 --testChan = Trigger (contentIs "!testChan" <&&> typeIs "pm")
 --                   (\mi -> respond mi "This is a message\nthat should be\nfiltered")
+
+-- Suck trigger: counts sucking
+suck :: Trigger
+suck = Trigger (contentIs "!suck" <&&> typeIs "c")
+               doSuck
+
+doSuck :: Act
+doSuck mi = duraGet ("suck_" ++ who mi) >>= \sucks ->
+            case readMay sucks of
+              Nothing -> doSuck' 0
+              Just x  -> doSuck' x
+    where doSuck' n = let n' = n + 1
+                      in duraStore ("suck_" ++ who mi) (show n') >>
+                         respond mi  (who mi ++ " has sucked " ++ show n' ++ " times.")

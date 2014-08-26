@@ -24,7 +24,10 @@ defaultMInfo = MessageInfo "idleThoughts"
                            printLn
 
 handle :: MonadAction m => String -> m ()
-handle = makeAction . parseMessage
+handle = makeActions . parseMessage
+
+makeActions :: MonadAction m => [Message] -> m ()
+makeActions = mapM_ makeAction
 
 makeAction :: MonadAction m => Message -> m ()
 makeAction (ChallStr ckey chall) = printLn "Received Challenge" >>

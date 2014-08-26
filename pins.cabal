@@ -19,6 +19,6 @@ executable pins
   main-is:             Pins.hs
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.6 && <4.7, websockets >=0.8 && <0.9, text >=1.1 && <1.2, json >=0.7 && <0.8, HTTP >=4000.2 && <4000.3, parsec >=3.1 && <3.2, split >=0.2, mtl >= 2.1, containers >= 0.5, directory >= 1.2, acid-state >= 0.12, safecopy >= 0.8
+  build-depends:       base >=4.6 && <4.7, websockets >=0.8 && <0.9, text >=1.1 && <1.2, json >=0.7 && <0.8, HTTP >=4000.2 && <4000.3, parsec >=3.1 && <3.2, split >=0.2, mtl >= 2.1, containers >= 0.5, directory >= 1.2, acid-state >= 0.12, safecopy >= 0.8, safe >= 0
   -- hs-source-dirs:      
   default-language:    Haskell2010
