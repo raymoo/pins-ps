@@ -44,6 +44,7 @@ class Monad m => MonadAction m where
     duraGet :: String -> m String          -- get a string from durable storage (similar to file I/O)
     duraStore :: String -> String -> m ()  -- put a string in durable storage
     duraAppend :: String -> String -> m () -- append a string to a string in durable storage, adding a newline
+    getRooms :: m [String]                    -- list of rooms to join
 
 constant :: MonadAction m => a -> m a
 constant = return
@@ -58,6 +59,9 @@ sendPm u m = send pmMessage
 
 command :: MonadAction m => String -> m ()
 command = send . ('|' :)
+
+join :: MonadAction m => String -> m ()
+join room = command $ "/join " ++ room
 
 varGet :: (Variable a, MonadAction m) => String -> m (Maybe a)
 varGet = liftM unpackCheck . getVar

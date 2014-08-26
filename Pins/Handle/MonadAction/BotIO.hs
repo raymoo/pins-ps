@@ -31,6 +31,7 @@ data Config = Config { name   :: String
                      , server :: String
                      , port   :: Int
                      , path   :: String
+                     , rooms  :: [String]
                      } deriving (Show)
 
 
@@ -104,3 +105,4 @@ instance MonadAction (StateT Bot IO) where
                     liftIO $ update' as (AcidWrite k (a ++ "\n"))
     duraAppend k a = acidState <$> get >>= \as ->
                      liftIO $ update' as (AcidAppend k a)
+    getRooms = (rooms . bConfig) `liftM` get

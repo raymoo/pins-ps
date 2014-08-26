@@ -3,6 +3,7 @@ module Pins.Handle ( handle ) where
 import Pins.Handle.Parse
 import Pins.Handle.MonadAction
 import Pins.Handle.Triggers
+import Control.Monad (liftM)
 import Data.Maybe
 
 passTriggers :: MonadAction m => MessageInfo -> [Trigger] -> m ()
@@ -29,7 +30,7 @@ makeAction :: MonadAction m => Message -> m ()
 makeAction (ChallStr ckey chall) = printLn "Received Challenge" >>
                                    login ckey chall >>
                                    printLn "Sending response" >>
-                                   command "/join yuyukofanclub"
+                                   getRooms >>= mapM_ join
 makeAction m = maybe (printLn $ "Unhandled Message: " ++ show m) (`passTriggers` triggerList) (makeMInfo m)
 
 safeHead :: [a] -> Maybe a
