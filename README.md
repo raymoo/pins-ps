@@ -22,8 +22,9 @@ Config file is very basic at the moment, you need a file named "config" in the s
 3: server (main server is sim.smogon.com)<br />
 4: port (main is 8000)<br />
 5: path (on main it is /showdown/websocket)
+6+: Any rooms you want it to join
 
-You can have too many lines, but the program will complain if you don't have enough
+Behavior is undefined if you have the wrong values on the wrong lines.
 
 
 Using the Bot
@@ -33,6 +34,12 @@ You can run the generated executable directly, or you can run without compiling 
 
 Features
 =======
-It currently only connects to techcode room (and won't join a room on any server without one). You could make a trigger to join it to other rooms, but no access lists until I work on trigger inputs a bit more.
+It will follow your config file, or if it's absent, prompt you for username, password, and a list of rooms. To finish entering rooms, enter a newline without entering any text. The bot will then connect to smogon server.
 
-Basic triggers are in, but they're ugly and undocumented. You might be able to figure them out anyway, though.
+Triggers
+=======
+Basic triggers are in, but only sparsely documented. If you want to create new triggers I recommend looking in Pins.Handle.MonadAction as it specifies what you can do in instances of MonadAction (which all triggers must return), and includes a lot of premade functions for common tasks, like sending pms or sending chat messages.
+
+All triggers are created in Triggers.hs. A possibility in the future is to make pins a library with a function that returns an IO () and takes configuration, including a list of triggers. This would mean that triggers can be declared outside the repo. You will still have to recompile each time you change it, though.
+
+Triggers are records with two fields: test, which is type MessageInfo -> Bool, and act, which is type MonadAction m => MessageInfo -> m (). MessageInfo is documented in the comments next to it in Triggers.hs.
