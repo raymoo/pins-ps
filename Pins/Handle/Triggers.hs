@@ -52,7 +52,8 @@ typeIs :: String -> Test
 typeIs s = (s==) . mType
 
 startsWith :: String -> Test
-startsWith s = and . zipWith (==) s . what
+startsWith s =  (s==) . take l . what
+    where l = length s
 
 combine :: [Test] -> Test
 combine ts = and . flip map ts . flip ($)
