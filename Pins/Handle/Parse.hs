@@ -45,15 +45,15 @@ getArgs = many mLex
 parseMessage :: String -> [Message]
 parseMessage s = case parse messages "message parsing" s of
                  Right a -> a
-                 Left _ -> [Unknown]
+                 Left _ -> []
 
 messages :: Parser [Message]
-messages =  room >>= \r ->
-            many (char '\n' *> message r) <|>
-            liftA2 (:) (message "") (many (char '\n' *> message ""))
+messages =  (room >>= \r ->
+            many (char '\n' *> message r)) <|>
+            try(liftA2 (:) (message "") (many (char '\n' *> message "")))
 
 message :: String -> Parser Message
-message r = try (chooseParse r) <|> try (chooseParse r) <|> baseStr
+message r = try (chooseParse r) <|> baseStr
 
 -- Deciders
 chooseParse :: String -> Parser Message
@@ -61,7 +61,7 @@ chooseParse r = mLex >>= chooseMore
     where chooseMore "c:"       = try (mLex *> chat r) <|> return Unknown
           chooseMore "challstr" = try challStr <|> return Unknown
           chooseMore "pm"       = try pm <|> return Unknown
-          chooseMore _          = return Unknown
+          chooseMore _          = (return Unknown <* many (noneOf "\n"))
 
 -- Message type specific parsers
 pm :: Parser Message
