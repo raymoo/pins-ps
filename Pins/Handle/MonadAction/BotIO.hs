@@ -24,7 +24,18 @@ data Bot = Bot { bName :: String
                , bConfig :: Config
                , acidState :: AcidState PermaStore
                , messChan :: Chan T.Text
+               , timestamps :: M.Map String Integer
                }
+
+defaultBot :: Bot
+defaultBot = Bot ""
+                 ""
+                 (error "bot has no connection!!!")
+                 M.empty
+                 (error "bot has no config!!!")
+                 (error "bot has no acid state!") 
+                 (error "bot has no message queue!!!")
+                 M.empty
 
 data Config = Config { name   :: String
                      , pass   :: String

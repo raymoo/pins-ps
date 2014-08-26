@@ -33,8 +33,14 @@ bot config conn = do
   putStrLn "Connected"
   as <- openLocalState initialPerma
   chan <- liftIO $ makeSender conn
-  evalStateT loop (b as chan)
-  where b = Bot (name config) (pass config) conn blankVar config
+  let b = defaultBot { bName     = name config
+                     , bPass     = pass config
+                     , bConn     = conn
+                     , bConfig   = config
+                     , acidState = as
+                     , messChan  = chan
+                     } 
+  evalStateT loop b
 
 runBot :: Config -> IO ()
 runBot c = WS.runClient (server c) (port c) (path c) (bot c)
