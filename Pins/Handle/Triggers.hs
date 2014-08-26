@@ -29,16 +29,16 @@ data Trigger = Trigger { test ::Test               -- The checking function
 
 -- Add any triggers you want used here
 triggerList :: [Trigger]
-triggerList = [ testCheck
-              , anonMessage
+triggerList = [ anonMessage
               , about
               , sokuHost
               , sokuHosting
               , sokuUnhost
               , kickHost
               , topic
-              , testDur
-              , testChan
+--              , testDur
+--              , testChan
+--              , testCheck
               ]
 
 -- Utility Functions: Common Tests
@@ -47,6 +47,9 @@ contentIs s = (s==) . what
 
 rankIn :: String -> Test
 rankIn s = flip elem s . rank
+
+voicePlus :: Test
+voicePlus = rankIn "+%@#&~"
 
 typeIs :: String -> Test
 typeIs s = (s==) . mType
@@ -103,13 +106,13 @@ aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String
                          (`F.forM_` (varPut k . aListDel k'))
 
 -- Test trigger: Tests current basic functionality
-testCheck :: Trigger
-testCheck = Trigger (contentIs "!test")
-                    (\x -> constant "Working" >>= flip say x)
+--testCheck :: Trigger
+--testCheck = Trigger (contentIs "!test")
+--                    (\x -> constant "Working" >>= flip say x)
 
 -- Anonymous message trigger: use !mess destination, message to send a message
 anonMessage :: Trigger
-anonMessage = Trigger (startsWith "!mess" <&&> typeIs "pm")
+anonMessage = Trigger (startsWith "!mess" <&&> typeIs "pm" <&&> voicePlus)
                       sendAnonMessage
 
 sendAnonMessage :: Act
@@ -126,12 +129,12 @@ sendAnonMessage mi = anonMessMake . args $ mi
 
 -- About trigger: Displays bot info
 about :: Trigger
-about = Trigger (contentIs "!about")
+about = Trigger (contentIs "!about" <&&> voicePlus)
                 (say "I am a bot written by Reimu in the functional language Haskell (http://www.haskell.org). Repo: https://github.com/raymoo/pins-ps")
 
 -- Host trigger: Record hosting info
 sokuHost :: Trigger
-sokuHost = Trigger ((contentIs "!host" <||> startsWith "!host ") <&&> typeIs "c")
+sokuHost = Trigger ((contentIs "!host" <||> startsWith "!host ") <&&> typeIs "c" <&&> voicePlus)
                    recHost
 
 recHost :: Act
@@ -164,7 +167,7 @@ generateList xs =  unlines $ map (\(x,y) -> x ++ " is hosting at " ++ y) xs
 
 -- Unhost Trigger: Stop hosting
 sokuUnhost :: Trigger
-sokuUnhost = Trigger (contentIs "!unhost" <&&> typeIs "c")
+sokuUnhost = Trigger (contentIs "!unhost" <&&> typeIs "c" <&&> voicePlus)
                      stopHosting
 
 stopHosting :: Act
@@ -210,9 +213,9 @@ doTopic mi = let rem = (drop 7 . what $ mi)
                  where k = "topic_" ++ room mi
 
 -- Test Durable storage
-testDur :: Trigger
-testDur = Trigger (startsWith "!testDur")
-                  testTheDur
+--testDur :: Trigger
+--testDur = Trigger (startsWith "!testDur")
+--                  testTheDur
 
 testTheDur :: Act
 testTheDur mi = respond mi "Storing your test" >>
@@ -221,6 +224,6 @@ testTheDur mi = respond mi "Storing your test" >>
                 respond mi ("Retrieved: " ++ ts)
 
 -- Test Channel: Tests if the queue works
-testChan :: Trigger
-testChan = Trigger (contentIs "!testChan" <&&> typeIs "pm")
-                   (\mi -> respond mi "This is a message\nthat should be\nfiltered")
+--testChan :: Trigger
+--testChan = Trigger (contentIs "!testChan" <&&> typeIs "pm")
+--                   (\mi -> respond mi "This is a message\nthat should be\nfiltered")
