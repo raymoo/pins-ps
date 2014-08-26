@@ -83,14 +83,11 @@ acidAppend k = modify . appendStore k
 acidGet :: String -> Query PermaStore String
 acidGet k = getStore k `liftM` ask
 
-$(makeAcidic ''PermaStore ['acidWrite, 'acidAppend, 'acidGet])
-
-writeLinesToChan :: Chan a -> [a] -> IO ()
-writeLinesToChan = mapM_ . writeChan 
+$(makeAcidic ''PermaStore ['acidWrite, 'acidAppend, 'acidGet]) 
 
 instance MonadAction (StateT Bot IO) where
     send s = messChan <$> get >>= \chan ->
-             liftIO $ writeLinesToChan chan (T.lines . T.pack $ s)
+             liftIO $ writeList2Chan chan (T.lines . T.pack $ s)
     printLn = liftIO . putStrLn
     login cKey chall = do
       name <- getName
