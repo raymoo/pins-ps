@@ -15,7 +15,7 @@ data MessageInfo = MessageInfo { mType   :: String   -- What was it - chat, pm, 
                                , who     :: String   -- The user
                                , rank    :: Char     -- The user's rank
                                , room    :: String   -- The room the message was in
-                               , respond :: Response -- Shortcut for sending message to room
+                               , respond :: Response -- Shortcut for sending a response to the message
                                }
 
 type Response = MonadAction m => String -> m ()
