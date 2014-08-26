@@ -32,9 +32,7 @@ bot :: Config -> WS.ClientApp ()
 bot config conn = do
   putStrLn "Connected"
   as <- openLocalState initialPerma
-  chan <- newChan
-  tid <- myThreadId
-  liftIO $ forkIO $ messageSender conn chan tid
+  chan <- liftIO $ makeSender conn
   evalStateT loop (b as chan)
   where b = Bot (name config) (pass config) conn blankVar config
 
@@ -49,12 +47,16 @@ loop = forever $ catchStateTIO (get >>=
                                  get >>= 
                                  liftIO . startBotAgain) :: SomeException -> StateT Bot IO ())
 
+makeSender :: WS.Connection -> IO (Chan T.Text)
+makeSender con = newChan >>= \chan ->
+                 myThreadId >>= \tid ->
+                 forkIO (messageSender con chan tid) >>
+                 return chan
+
 altBot :: Bot -> WS.ClientApp ()
 altBot b conn = do
   putStrLn "reconnected"
-  chan <- newChan
-  tid <- myThreadId
-  liftIO $ forkIO $ messageSender conn chan tid
+  chan <- liftIO $ makeSender conn
   let bot = b { bConn = conn, messChan = chan }
   evalStateT loop bot 
 

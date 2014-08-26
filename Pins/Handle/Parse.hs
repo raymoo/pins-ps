@@ -61,7 +61,7 @@ chooseParse r = mLex >>= chooseMore
     where chooseMore "c:"       = try (mLex *> chat r) <|> return Unknown
           chooseMore "challstr" = try challStr <|> return Unknown
           chooseMore "pm"       = try pm <|> return Unknown
-          chooseMore _          = (return Unknown <* many (noneOf "\n"))
+          chooseMore _          = return Unknown <* many (noneOf "\n")
 
 -- Message type specific parsers
 pm :: Parser Message
