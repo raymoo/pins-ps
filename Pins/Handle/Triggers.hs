@@ -174,9 +174,9 @@ sokuUnhost = Trigger (contentIs "!unhost" <&&> typeIs "c" <&&> voicePlus)
 
 stopHosting :: Act
 stopHosting mi = (removeHost . who $ mi) >>= \result ->
-                 case result of
-                   True  -> respond mi (who mi ++ " is no longer hosting")
-                   False -> respond mi "You are not hosting"
+                 respond mi (if   result
+                             then who mi ++ " is no longer hosting"
+                             else "You are not hosting")
 
 removeHost :: (MonadAction m) => String -> m Bool
 removeHost s = sokuVar >>= \var ->
@@ -195,9 +195,9 @@ kickAHost :: Act
 kickAHost mi = case drop 10 . what $ mi of
                  []   -> respond mi "Specify a user to kick"
                  user -> removeHost user >>= \res ->
-                         case res of
-                           True  -> respond mi "User removed."
-                           False -> respond mi $ "User " ++ user ++ " is not hosting."
+                         respond mi (if res
+                                     then "User removed."
+                                     else "User " ++ user ++ " is not hosting.")
                                    
 
 -- Topic Trigger: Can set or get the topic
@@ -243,3 +243,4 @@ doSuck mi = duraGet ("suck_" ++ who mi) >>= \sucks ->
     where doSuck' n = let n' = n + 1
                       in duraStore ("suck_" ++ who mi) (show n') >>
                          respond mi  (who mi ++ " has sucked " ++ show n' ++ " times.")
+
