@@ -59,7 +59,8 @@ message r = try (chooseParse r) <|> baseStr
 -- Deciders
 chooseParse :: String -> Parser Message
 chooseParse r = mLex >>= chooseMore
-    where chooseMore "c:"       = try (chat r) <|> return Unknown
+    where chooseMore "c:"       = try (chatTime r) <|> return Unknown
+          chooseMore "c"        = try (chat r) <|> return Unknown
           chooseMore "challstr" = try challStr <|> return Unknown
           chooseMore "pm"       = try pm <|> return Unknown
           chooseMore ":"        = try (time r) <|> return Unknown
@@ -69,8 +70,11 @@ chooseParse r = mLex >>= chooseMore
 pm :: Parser Message
 pm = Pm <$> mLex <*> (mLex *> contLex)
 
+chatTime :: String -> Parser Message
+chatTime r = Chat r <$> dLex <*> mLex <*> contLex
+
 chat :: String -> Parser Message
-chat r = Chat r <$> dLex <*> mLex <*> contLex
+chat r = Chat r 9999999999999999 <$> mLex <*> contLex
 
 challStr :: Parser Message
 challStr = ChallStr <$>  dLex <*> mLex
