@@ -207,7 +207,9 @@ removeHost s = sokuVar >>= \var ->
                  Just x  -> aListDelVarString "soku" (condenseNick s) >>
                             return True
                  Nothing -> return False
-    where sokuVar = fromMaybe [] `liftM` varGet "soku" :: (MonadAction m) => m [(String, String)]
+    where sokuVar =
+            fromMaybe [] `liftM`
+            varGet "soku" :: (MonadAction m) => m [(String, String)]
 
 -- Kick Host: Kick a host
 kickHost :: Trigger
@@ -232,10 +234,11 @@ doTopic :: Act
 doTopic mi = let rem = (drop 7 . what $ mi)
              in case rem of
                   [] -> varGet k >>=    -- They want the topic
-                        sendChat (room mi) . ("/wall Topic: "++) . fromMaybe "Nothing"
+                        sendChat (room mi) . topicMess . fromMaybe "Nothing"
                   s  -> varPut k rem >> --They are setting the topic
                         sendChat (room mi) ("/wall Topic: " ++ rem)
                  where k = "topic_" ++ room mi
+                       topicMess t = "/wall Topic: " ++ t
 
 -- Test Durable storage
 --testDur :: Trigger
@@ -265,5 +268,5 @@ doSuck mi = duraGet ("suck_" ++ who mi) >>= \sucks ->
               Just x  -> doSuck' x
     where doSuck' n = let n' = n + 1
                       in duraStore ("suck_" ++ who mi) (show n') >>
-                         respond mi  (who mi ++ " has sucked " ++ show n' ++ " times.")
-
+                         respond mi (makeSuckMess n')
+          makeSuckMess n = who mi ++ " has sucked " ++ show n ++ " times."
