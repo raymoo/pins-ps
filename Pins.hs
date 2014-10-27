@@ -19,15 +19,15 @@ getConfig True  = readFile "config" >>= testConfig . lines
 getConfig False = defaultConfig
 
 defaultConfig :: IO Config
-defaultConfig = putStrLn "No valid config file found, defaulting to Smogon server" >>
-                liftM3 (\x y -> Config x y "sim.smogon.com" 8000 "/showdown/websocket")
-                (prompt "Username?")
-                (prompt "Password?")
-                (promptList "Rooms?")
+defaultConfig =
+    putStrLn "No valid config file found, defaulting to Smogon server" >>
+    liftM3 (\x y -> Config x y "sim.smogon.com" 8000 "/showdown/websocket")
+    (prompt "Username?")
+    (prompt "Password?")
+    (promptList "Rooms?")
 
 promptList :: String -> IO [String]
-promptList s = putStrLn s >>
-               getLine >>= \line ->
+promptList s = prompt s >>= \line ->
                case line of
                  "" -> return []
                  r  -> (r :) `liftM` promptList s
