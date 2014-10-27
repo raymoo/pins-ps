@@ -187,7 +187,7 @@ getHosting mi = sendPm (who mi) "Hosts:" >>
 
 generateList :: [(String, String)] -> String
 generateList [] = "Nobody is hosting."
-generateList xs =  unlines $ map createHostMessage xs
+generateList xs =  unlines $ "Hosts:" : map createHostMessage xs
     where createHostMessage (x,y) = x ++ " is hosting at " ++ y
 
 -- Unhost Trigger: Stop hosting
