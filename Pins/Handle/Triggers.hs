@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE Rank2Types, GADTs #-}
 
 module Pins.Handle.Triggers where
 
@@ -6,6 +6,7 @@ import           Pins.Handle.Triggers.Imports
 import           Control.Monad
 import           Data.Char
 import           Data.Maybe
+import           Data.Monoid
 import           Safe
 import qualified Data.Foldable   as F
 import qualified Data.List       as L
@@ -89,11 +90,15 @@ dropLeadSpaces = dropWhile (' '==)
 getArgs :: String -> [String]
 getArgs = map dropLeadSpaces . LS.splitOn ","
 
+-- This could be more efficient by getting args and remaining in one pass
 getSomeArgs ::Int ->  String -> ([String], String)
 getSomeArgs n s = let ss = LS.splitOn "," s
-                  in (map dropLeadSpaces $ take n ss, L.intercalate "," . drop n $ ss)
+                      remaining = L.intercalate "," . drop n $ ss
+                      args = map dropLeadSpaces $ take n ss
+                  in (args, remaining)
 
-aListSet :: Eq k => k -> a -> [(k,a)] -> [(k,a)] -- Very inefficient (O(n)) modification for associated lists.
+-- Very inefficient (O(n)) modification for associated lists.
+aListSet :: Eq k => k -> a -> [(k,a)] -> [(k,a)]
 aListSet k x = ((k, x) :) . aListDel k
 
 aListSetVar :: (Variable a, MonadAction m) => Key -> Key -> a -> m ()
@@ -104,8 +109,9 @@ aListDel :: Eq k => k -> [(k,a)] -> [(k,a)] -- O(n) deletion function
 aListDel k = filter ((k/=) . fst)
 
 aListDelVarString :: MonadAction m => Key -> Key -> m ()
-aListDelVarString k k' = (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>=
-                         (`F.forM_` (varPut k . aListDel k'))
+aListDelVarString k k' =
+    (varGet k :: MonadAction m => m (Maybe [(String, String)])) >>=
+    (`F.forM_` (varPut k . aListDel k'))
 
 -- Test trigger: Tests current basic functionality
 --testCheck :: Trigger
@@ -120,38 +126,54 @@ anonMessage = Trigger (startsWith "!mess" <&&> typeIs "pm" <&&> voicePlus)
 sendAnonMessage :: Act
 sendAnonMessage mi = anonMessMake . args $ mi
     where anonMessMake (ss, s)
-              | not . null $ ss = case ss !! 0 of
-                                   ('#':xs) -> sendChat (drop 1 (ss !! 0)) ("Anonymous Message: " ++ s)
-                                   _        -> sendPm (ss !! 0) ("Anonymous Message: " ++ s) >>
-                                               printLn ("Sending pm to " ++ ss !! 0)
-              | otherwise      = anonErrorMessage
-          anonErrorMessage = respond mi "Usage is: !mess [#]destination, message" >>
-                             respond mi "The # is only necessary for sending to rooms"
+              | not . null $ ss = 
+                  case ss !! 0 of
+                    ('#':xs) -> let room = drop 1 (ss !! 0)
+                                in sendChat room anonMessage
+                    _        -> let user = ss !! 0
+                                in sendPm user anonMessage >>
+                                   printLn ("Sending pm to " ++ user)
+              | otherwise      = sendErrorMessage
+            where anonMessage = "Anonymous Message: " ++ s
+          anonErrorMessage = "Usage is: !mess [#]destination, message\n" ++
+                             "The # is only necessary for sending to rooms"
+          sendErrorMessage = respond mi anonErrorMessage
           args = getSomeArgs 1 . drop 6 . what
 
 -- About trigger: Displays bot info
 about :: Trigger
 about = Trigger (contentIs "!about" <&&> voicePlus)
-                (say "I am a bot written by Reimu in the functional language Haskell (http://www.haskell.org). Repo: https://github.com/raymoo/pins-ps")
+                (say aboutMessage)
+    where aboutMessage = 
+              "I am a bot written by Reimu in the functional language Haskell \
+              \(http//www.haskell.org). Repo: https://github.com/raymoo/pins-ps"
 
 -- Host trigger: Record hosting info
 sokuHost :: Trigger
-sokuHost = Trigger ((contentIs "!host" <||> startsWith "!host ") <&&> typeIs "c" <&&> voicePlus)
+sokuHost = Trigger ((contentIs "!host" <||> startsWith "!host ") <&&>
+                    typeIs "c" <&&>
+                    voicePlus)
                    recHost
 
 recHost :: Act
 recHost mi = case drop 6 . what $ mi of
                [] -> recHostOnly mi
-               s  -> aListSetVar "soku" (condenseNick . who $ mi) s >>
-                     respond mi (who mi ++ " is hosting at " ++ s) >>
-                     duraStore ("soku_" ++ condenseNick (who mi)) s
+               s  -> aListSetVar "soku" conUser s >>
+                     respond mi (hostMessage s) >>
+                     duraStore ("soku_" ++ conUser) s
+    where hostMessage addr = (who mi ++ " is hosting at " ++ addr)
+          conUser = condenseNick . who $ mi
 
 recHostOnly :: Act
-recHostOnly mi = duraGet ("soku_" ++ condenseNick (who mi)) >>= \s ->
+recHostOnly mi = duraGet ("soku_" ++ conUser) >>= \s ->
                  case s of
-                   [] -> respond mi "You must have explicitly given an address:port at least once for me to remember it."
-                   s -> aListSetVar "soku" (condenseNick . who $ mi) s >>
-                        respond mi (who mi ++ " is hosting at " ++ s)
+                   [] -> respond mi explicitError
+                   s  -> aListSetVar "soku" conUser s >>
+                         respond mi (hostMessage s)
+    where hostMessage addr = (who mi ++ " is hosting at " ++ addr)
+          conUser = condenseNick . who $ mi
+          explicitError = "You must have explicitly given an address:port at \
+                          \least once for me to remember it."
 
 -- Hosting Trigger: Get hosting info
 sokuHosting :: Trigger
@@ -165,7 +187,8 @@ getHosting mi = sendPm (who mi) "Hosts:" >>
 
 generateList :: [(String, String)] -> String
 generateList [] = "Nobody is hosting."
-generateList xs =  unlines $ map (\(x,y) -> x ++ " is hosting at " ++ y) xs
+generateList xs =  unlines $ map createHostMessage xs
+    where createHostMessage (x,y) = x ++ " is hosting at " ++ y
 
 -- Unhost Trigger: Stop hosting
 sokuUnhost :: Trigger
