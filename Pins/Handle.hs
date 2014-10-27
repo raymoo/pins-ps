@@ -61,11 +61,11 @@ makeMInfo (Chat r _ u w) = Just defaultMInfo { mType = "c"
                                              , room = r
                                              , respond = sendChat r
                                              }
-makeMInfo (Pm u w)     = Just defaultMInfo { mType = "pm"
-                                           , what = w
-                                           , who = drop 1 u
-                                           , rank = takeRank u
-                                           , respond = sendPm u
-                                           }
-makeMInfo _            = Nothing
+makeMInfo (Pm u w)       = Just defaultMInfo { mType = "pm"
+                                             , what = w
+                                             , who = drop 1 u
+                                             , rank = takeRank u
+                                             , respond = sendPm u
+                                             }
+makeMInfo _              = Nothing
 
