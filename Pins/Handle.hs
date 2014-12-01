@@ -67,5 +67,10 @@ makeMInfo (Pm u w)       = Just defaultMInfo { mType = "pm"
                                              , rank = takeRank u
                                              , respond = sendPm u
                                              }
+makeMInfo (Raw r s)      = Just defaultMInfo { mType = "raw"
+                                             , what  = s
+                                             , room  = r
+                                             , respond = command
+                                             } 
 makeMInfo _              = Nothing
 

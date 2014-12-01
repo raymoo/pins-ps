@@ -15,6 +15,7 @@ data Message = Unknown
              | Chat Room Integer User What
              | Pm User What
              | Time Room Integer
+             | Raw String String
              | Base String
                deriving Show
 
@@ -64,6 +65,7 @@ chooseParse r = mLex >>= chooseMore
           chooseMore "challstr" = try challStr <|> return Unknown
           chooseMore "pm"       = try pm <|> return Unknown
           chooseMore ":"        = try (time r) <|> return Unknown
+          chooseMore "raw"      = try (raw r) <|> return Unknown
           chooseMore _          = return Unknown <* many (noneOf "\n")
 
 -- Message type specific parsers
@@ -76,6 +78,9 @@ chatTime r = Chat r <$> dLex <*> mLex <*> contLex
 chat :: String -> Parser Message
 chat r = Chat r 9999999999999999 <$> mLex <*> contLex
 
+raw :: String -> Parser Message
+raw r = Raw r <$> contLex
+
 challStr :: Parser Message
 challStr = ChallStr <$>  dLex <*> mLex
 
@@ -84,3 +89,4 @@ time r = Time r <$> dLex
 
 baseStr :: Parser Message
 baseStr = Base <$> many anyChar
+
