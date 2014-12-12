@@ -71,6 +71,11 @@ makeMInfo (Raw r s)      = Just defaultMInfo { mType = "raw"
                                              , what  = s
                                              , room  = r
                                              , respond = command
+                                             }
+makeMInfo (Base s)       = Just defaultMInfo { mType = "base"
+                                             , what  = s
+                                             , room  = "top"
+                                             , respond = send
                                              } 
 makeMInfo _              = Nothing
 

@@ -164,6 +164,12 @@ recHost mi = case drop 6 . what $ mi of
     where hostMessage addr = (who mi ++ " is hosting at " ++ addr)
           conUser = condenseNick . who $ mi
 
+recHostMod :: Act
+recHostMod mi = duraStore ("sokuroom") (room mi) >>
+                duraStore ("sokuask") (who mi) >>
+                (command $ "/whois " ++ who mi)
+
+
 recHostOnly :: Act
 recHostOnly mi = duraGet ("soku_" ++ conUser) >>= \s ->
                  case s of
@@ -175,6 +181,16 @@ recHostOnly mi = duraGet ("soku_" ++ conUser) >>= \s ->
           explicitError = "You must have explicitly given an address:port at \
                           \least once for me to remember it."
 
+-- When a response comes
+ipRes :: Trigger
+ipRes = Trigger ipTest ipAct
+
+ipTest :: Test
+ipTest = const False
+
+ipAct :: Act
+ipAct mi = return ()
+
 -- Hosting Trigger: Get hosting info
 sokuHosting :: Trigger
 sokuHosting = Trigger (contentIs "!hosting" <&&> (typeIs "c" <||> typeIs "pm"))
@@ -182,12 +198,12 @@ sokuHosting = Trigger (contentIs "!hosting" <&&> (typeIs "c" <||> typeIs "pm"))
 
 getHosting :: Act
 getHosting mi = sendPm (who mi) "Hosts:" >>
-                hostList >>= sendPm (who mi)
+                hostList >>= mapM_ (sendPm (who mi))
     where hostList = (generateList . fromMaybe []) `liftM` varGet "soku"
 
-generateList :: [(String, String)] -> String
-generateList [] = "Nobody is hosting."
-generateList xs =  unlines $ map createHostMessage xs
+generateList :: [(String, String)] -> [String]
+generateList [] = ["Nobody is hosting."]
+generateList xs =  map createHostMessage xs
     where createHostMessage (x,y) = x ++ " is hosting at " ++ y
 
 -- Unhost Trigger: Stop hosting
