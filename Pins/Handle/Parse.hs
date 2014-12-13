@@ -47,7 +47,7 @@ getArgs = many mLex
 parseMessage :: String -> [Message]
 parseMessage s = case parse messages "message parsing" s of
                  Right a -> a
-                 Left _ -> []
+                 Left  _ -> []
 
 messages :: Parser [Message]
 messages =  (room >>= \r ->
@@ -88,5 +88,5 @@ time :: String -> Parser Message
 time r = Time r <$> dLex
 
 baseStr :: Parser Message
-baseStr = Base <$> many anyChar
+baseStr = Base <$> many (noneOf "\n")
 
