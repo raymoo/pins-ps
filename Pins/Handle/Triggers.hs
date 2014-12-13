@@ -202,7 +202,7 @@ ipAct mi =
     room <- duraGet "sokuroom"
     port <- duraGet "sokuport"
     let conUser = condenseNick user
-    aListSetVar "soku" conUser ip
+    aListSetVar "soku" conUser (ip ++ ":" ++ port)
     hostCom user room (ip ++ ":" ++ port)
 
 -- Hosting Trigger: Get hosting info
