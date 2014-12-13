@@ -110,7 +110,7 @@ instance MonadAction (StateT Bot IO) where
     duraGet k = acidState <$> get >>= \as ->
                 liftIO $ query' as (AcidGet k)
     duraStore k a = acidState <$> get >>= \as ->
-                    liftIO $ update' as (AcidWrite k (a ++ "\n"))
+                    liftIO $ update' as (AcidWrite k a)
     duraAppend k a = acidState <$> get >>= \as ->
                      liftIO $ update' as (AcidAppend k a)
     getRooms = (rooms . bConfig) `liftM` get
