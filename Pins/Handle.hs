@@ -33,7 +33,8 @@ makeActions = mapM_ makeAction
 makeAction :: MonadAction m => Message -> m ()
 makeAction (ChallStr ckey chall) = printLn "Received Challenge" >>
                                    login ckey chall >>
-                                   printLn "Sending response" >>
+                                   printLn "Sent response" >>
+                                   command "/part help" >>
                                    getRooms >>= mapM_ join
 makeAction (Time r t)            = setJoinTime r t
 makeAction m@(Chat r t _ _)      = (t >) `liftM` getJoinTime r >>= \new ->
