@@ -39,6 +39,7 @@ triggerList = [ anonMessage
               , kickHost
               , topic
               , suck
+              , ipRes
 --              , testDur
 --              , testChan
 --              , testCheck
@@ -151,9 +152,9 @@ about = Trigger (contentIs "!about" <&&> voicePlus)
 -- Host trigger: Record hosting info
 sokuHost :: Trigger
 sokuHost = Trigger ((contentIs "!host" <||> startsWith "!host ") <&&>
-                    typeIs "c" <&&>
+                    (typeIs "c" <||> typeIs "pm") <&&>
                     voicePlus)
-                   recHost
+                   recHostMod
 
 recHost :: Act
 recHost mi = case drop 6 . what $ mi of
@@ -165,9 +166,13 @@ recHost mi = case drop 6 . what $ mi of
           conUser = condenseNick . who $ mi
 
 recHostMod :: Act
-recHostMod mi = duraStore ("sokuroom") (room mi) >>
-                duraStore ("sokuask") (who mi) >>
-                (command $ "/whois " ++ who mi)
+recHostMod mi = let port = case drop 6 . what $ mi of
+                      "" -> "10800"
+                      x  -> x
+                in duraStore ("sokuroom") (room mi) >>
+                   duraStore ("sokuask") (who mi) >>
+                   duraStore ("sokuport") port >>
+                   (command $ "/ip " ++ who mi)
 
 
 recHostOnly :: Act
@@ -186,10 +191,19 @@ ipRes :: Trigger
 ipRes = Trigger ipTest ipAct
 
 ipTest :: Test
-ipTest = const False
+ipTest = typeIs "base" <&&> (("IP: " `L.isPrefixOf`) . what)
 
 ipAct :: Act
-ipAct mi = return ()
+ipAct mi =
+  let ip = drop 4 . what $ mi
+      hostCom u r addr = sendChat r $ u ++ " is hosting at " ++ addr
+  in do
+    user <- duraGet "sokuask"
+    room <- duraGet "sokuroom"
+    port <- duraGet "sokuport"
+    let conUser = condenseNick user
+    aListSetVar "soku" conUser ip
+    hostCom user room (ip ++ ":" ++ port)
 
 -- Hosting Trigger: Get hosting info
 sokuHosting :: Trigger
