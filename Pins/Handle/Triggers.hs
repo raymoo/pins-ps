@@ -191,7 +191,7 @@ ipRes :: Trigger
 ipRes = Trigger ipTest ipAct
 
 ipTest :: Test
-ipTest = typeIs "base" <&&> (("IP: " `L.isPrefixOf`) . what)
+ipTest = typeIs "base" <&&> ((("IP: " `L.isPrefixOf`) . what) <||> (("IPs:" `L.isPrefixOf`) . what))
 
 ipAct :: Act
 ipAct mi =
