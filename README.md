@@ -31,7 +31,7 @@ Using the Bot
 =======
 You can run the generated executable directly, or you can run without compiling with `runhaskell Pins.hs` in the top of the source directory.
 
-
+sfesefs
 Features
 =======
 It will follow your config file, or if it's absent, prompt you for username, password, and a list of rooms. To finish entering rooms, enter a newline without entering any text. The bot will then connect to smogon server.
